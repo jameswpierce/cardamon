@@ -1,5 +1,7 @@
-use std::fs::read_dir;
+use serde::Deserialize;
+use std::fs::{read_dir, read_to_string};
 use std::path::Path;
+use toml;
 
 #[derive(Debug)]
 struct Track {
@@ -9,10 +11,32 @@ struct Track {
     album: String,
 }
 
-fn main() {
+#[derive(Debug, Deserialize)]
+struct Config {
+    directories: Directories,
+    theme: Theme,
+}
+
+#[derive(Debug, Deserialize)]
+struct Directories {
+    music: String,
+    output: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Theme {
+    title: String,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config_raw =
+        read_to_string("config.toml").expect("No config.toml found in working directory.");
+    let config: Config = toml::from_str(&config_raw)?;
+    let music_path = Path::new(&config.directories.music);
+
     let mut tracks: Vec<Track> = vec![];
 
-    match read_dir("./music") {
+    match read_dir(music_path) {
         Err(why) => panic!("{:?}", why),
         Ok(artists) => {
             for artist in artists {
@@ -102,6 +126,7 @@ fn main() {
     }
 
     for track in tracks {
-        println!("{:?}", track)
+        println!("{:?}", track);
     }
+    Ok(())
 }
