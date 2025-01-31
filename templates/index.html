@@ -9,12 +9,10 @@
                 border: 0;
                 padding: 0;
                 margin: 0;
+                font-family: monospace;
             }
             html {
                 font-size: 16px;
-            }
-            ul {
-                list-style: none;
             }
             .flex {
                 display: flex;
@@ -25,17 +23,6 @@
             .w-full {
                 width: 100%;
             }
-            .max-h-full {
-                max-height: 100%;
-            }
-            .overflow-y-scroll {
-                overflow-y: scroll;
-                scrollbar-width: none; /* Firefox */
-                -ms-overflow-style: none; /* IE/Edge */
-            }
-            .overflow-y-scroll::-webkit-scrollbar {
-                display: none; /* Chrome, Safari, Opera */
-            }
         </style>
     </head>
     <body>
@@ -43,35 +30,46 @@
             <section
                 id="top"
                 class="flex"
-                style="max-height: calc(40vh - 4rem)"
+                style="max-height: calc(40vh - 4rem); height: calc(40vh - 4rem)"
             >
-                <ul id="artists" class="w-full overflow-y-scroll max-h-full">
+                <select
+                    id="artists"
+                    class="w-full"
+                    style="height: calc(40vh - 4rem)"
+                    multiple
+                >
                     {% for artist in data.artists %}
-                    <li id="{{ artist }}">{{ artist }}</li>
+                    <option id="{{ artist }}">{{ artist }}</option>
                     {% endfor %}
-                </ul>
-                <ul id="albums" class="w-full overflow-y-scroll max-h-full">
+                </select>
+                <select
+                    id="albums"
+                    class="w-full"
+                    style="height: calc(40vh - 4rem)"
+                    multiple
+                >
                     {% for album in data.albums %}
-                    <li id="{{ album }}">{{ album }}</li>
+                    <option id="{{ album }}">{{ album }}</option>
                     {% endfor %}
-                </ul>
+                </select>
             </section>
-            <section
-                id="bottom"
-                class="overflow-y-scroll"
-                style="max-height: calc(60vh - 4rem)"
-            >
-                <ul id="tracks" class="w-full overflow-y-scroll max-h-full">
+            <section id="bottom" style="max-height: calc(60vh - 4rem)">
+                <select
+                    id="tracks"
+                    class="w-full"
+                    style="height: calc(60vh - 4rem)"
+                    multiple
+                >
                     {% for track in data.tracks %}
-                    <li
+                    <option
                         id="{{ track.name }}"
-                        data-file-name="{{ track.file_name }}"
+                        data-file-path="/music/{{ track.file_name }}"
                     >
                         {{ track.artist }} - {{ track.album }} - {{ track.name
                         }}
-                    </li>
+                    </option>
                     {% endfor %}
-                </ul>
+                </select>
             </section>
         </main>
     </body>
