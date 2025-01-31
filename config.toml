@@ -1,6 +1,6 @@
 [directories]
-music = "./music"
-output = "./output"
+music = "music/"
+output = "output/"
 
 [theme]
 title = "donkbox music zone"

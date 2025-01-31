@@ -134,7 +134,7 @@
                     {% for track in data.tracks %}
                     <option
                         id="{{ track.id }}"
-                        data-file-path="/music/{{ track.artist_id }}/{{ track.album_id }}/{{ track.file_name }}"
+                        data-file-path="/{{ track.file_path }}"
                         data-artist-id="{{ track.artist_id }}"
                         data-album-id="{{ track.album_id }}"
                     >

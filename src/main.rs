@@ -33,7 +33,7 @@ struct AlbumCover {
 #[derive(Debug, Deserialize)]
 struct Track {
     id: String,
-    file_name: String,
+    file_path: String,
     name: String,
     artist_id: String,
     album_id: String,
@@ -130,6 +130,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                     Err(why) => panic!("{:?}", why),
                                                                     Ok(file) => {
                                                                         let file_path = file.path();
+                                                                        println!("{:?}", file_path);
                                                                         let extension =
                                                                             Path::new(&file_path)
                                                                                 .extension();
@@ -146,7 +147,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                                                 &TRACK_NAMESPACE,
                                                                                                 &file.file_name().as_encoded_bytes(),
                                                                                             ).to_string(),
-                                                                                            file_name: file.file_name().into_string().unwrap(),
+                                                                                            file_path: file.path().to_string_lossy().to_string(),
                                                                                             name: file.file_name().into_string().unwrap(),
                                                                                             artist_id: artist_id.to_string(),
                                                                                             album_id: album_id.to_string(),
