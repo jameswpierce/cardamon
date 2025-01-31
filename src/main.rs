@@ -209,8 +209,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(why) => panic!("{:?}", why),
         Ok(_) => {}
     };
-    // for track in tracks {
-    //     println!("{:?}", track);
-    // }
+
     Ok(())
 }
