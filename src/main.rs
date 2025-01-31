@@ -20,6 +20,7 @@ struct Artist {
 #[derive(Debug, Deserialize)]
 struct Album {
     id: String,
+    artist_id: String,
     title: String,
 }
 
@@ -108,6 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                     );
                                                     let album = Album {
                                                         id: album_id.to_string(),
+                                                        artist_id: artist_id.to_string(),
                                                         title: album
                                                             .file_name()
                                                             .into_string()

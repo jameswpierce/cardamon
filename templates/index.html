@@ -8,6 +8,34 @@
                 const albums = document.getElementById("albums");
                 const tracks = document.getElementById("tracks");
 
+                artists.querySelectorAll("option").forEach((artist) => {
+                    artist.addEventListener("click", () => {
+                        const artistId = artist.id;
+                        albums.querySelectorAll("option").forEach((album) => {
+                            album.style.display = "none";
+                            if (album.dataset.artistId === artistId) {
+                                album.style.display = "block";
+                            }
+                        });
+                        tracks.querySelectorAll("option").forEach((track) => {
+                            track.style.display = "none";
+                            if (track.dataset.artistId === artistId) {
+                                track.style.display = "block";
+                            }
+                        });
+                    });
+                });
+                albums.querySelectorAll("option").forEach((album) => {
+                    album.addEventListener("click", () => {
+                        const albumId = album.id;
+                        tracks.querySelectorAll("option").forEach((track) => {
+                            track.style.display = "none";
+                            if (track.dataset.albumId === albumId) {
+                                track.style.display = "block";
+                            }
+                        });
+                    });
+                });
                 tracks.querySelectorAll("option").forEach((track) => {
                     track.addEventListener("dblclick", () => {
                         const audio = document.getElementById("audio");
@@ -84,7 +112,12 @@
                     multiple
                 >
                     {% for album in data.albums %}
-                    <option id="{{ album.id }}">{{ album.title }}</option>
+                    <option
+                        id="{{ album.id }}"
+                        data-artist-id="{{ album.artist_id }}"
+                    >
+                        {{ album.title }}
+                    </option>
                     {% endfor %}
                 </select>
             </section>
@@ -99,6 +132,8 @@
                     <option
                         id="{{ track.id }}"
                         data-file-path="/music/{{ track.artist_id }}/{{ track.album_id }}/{{ track.file_name }}"
+                        data-artist-id="{{ track.artist_id }}"
+                        data-album-id="{{ track.album_id }}"
                     >
                         {{ track.artist_id }} - {{ track.album_id }} - {{
                         track.name }}
