@@ -9,7 +9,7 @@
                 const tracks = document.getElementById("tracks");
 
                 tracks.querySelectorAll("option").forEach((track) => {
-                    track.addEventListener("click", () => {
+                    track.addEventListener("dblclick", () => {
                         const audio = document.getElementById("audio");
                         audio.src = track.dataset.filePath;
                         audio.play();
@@ -28,6 +28,24 @@
             html {
                 font-size: 16px;
             }
+            select {
+                background-color: lime;
+                scrollbar-width: none; /*For Firefox*/
+                -ms-overflow-style: none; /*For Internet Explorer 10+*/
+            }
+            select::-webkit-scrollbar {
+                /*For WebKit Browsers*/
+                width: 0;
+            }
+            select option:nth-child(n) {
+                background-color: hsl(0, 100%, 80%);
+            }
+            select option:nth-child(2n) {
+                background-color: hsl(10, 100%, 80%);
+            }
+            select option:nth-child(3n) {
+                background-color: hsl(20, 100%, 80%);
+            }
             .flex {
                 display: flex;
             }
@@ -36,6 +54,9 @@
             }
             .w-full {
                 width: 100%;
+            }
+            .bg-blue {
+                background-color: blue;
             }
         </style>
     </head>
@@ -86,7 +107,7 @@
                 </select>
             </section>
         </main>
-        <aside>
+        <aside class="bg-blue w-full" style="height: 8rem">
             <audio id="audio" controls></audio>
         </aside>
     </body>
