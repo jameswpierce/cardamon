@@ -1,9 +1,12 @@
 use serde::Deserialize;
+use std::fs;
 use std::fs::{read_dir, read_to_string};
 use std::path::Path;
 use toml;
 
-#[derive(Debug)]
+use askama::Template;
+
+#[derive(Debug, Deserialize)]
 struct Track {
     file_name: String,
     name: String,
@@ -26,6 +29,20 @@ struct Directories {
 #[derive(Debug, Deserialize)]
 struct Theme {
     title: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Data {
+    artists: Vec<String>,
+    albums: Vec<String>,
+    tracks: Vec<Track>,
+}
+
+#[derive(Template)]
+#[template(path = "index.html")]
+struct IndexTemplate {
+    title: String,
+    data: Data,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -84,7 +101,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                                         // );
                                                                                         let track: Track = Track {
                                                                                             file_name: file.file_name().into_string().unwrap(),
-                                                                                            name: "track name".to_string(),
+                                                                                            name: file.file_name().into_string().unwrap(),
                                                                                             artist: artist.file_name().into_string().unwrap(),
                                                                                             album: album.file_name().into_string().unwrap(),
                                                                                         };
@@ -125,8 +142,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    for track in tracks {
-        println!("{:?}", track);
-    }
+    let mut artists = tracks
+        .iter()
+        .map(|x| x.artist.clone())
+        .collect::<Vec<String>>();
+    artists.dedup();
+    let mut albums = tracks
+        .iter()
+        .map(|x| x.album.clone())
+        .collect::<Vec<String>>();
+    albums.dedup();
+
+    let index = IndexTemplate {
+        title: config.theme.title,
+        data: Data {
+            tracks,
+            albums,
+            artists,
+        },
+    };
+
+    let index_html = index.render().unwrap();
+    let output_path = Path::new(&config.directories.output);
+
+    match fs::write(output_path.join("index.html"), index_html) {
+        Err(why) => panic!("{:?}", why),
+        Ok(_) => {}
+    };
+    // for track in tracks {
+    //     println!("{:?}", track);
+    // }
     Ok(())
 }
