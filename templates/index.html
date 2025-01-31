@@ -74,7 +74,7 @@
                     multiple
                 >
                     {% for artist in data.artists %}
-                    <option id="{{ artist }}">{{ artist }}</option>
+                    <option id="{{ artist.id }}">{{ artist.name }}</option>
                     {% endfor %}
                 </select>
                 <select
@@ -84,7 +84,7 @@
                     multiple
                 >
                     {% for album in data.albums %}
-                    <option id="{{ album }}">{{ album }}</option>
+                    <option id="{{ album.id }}">{{ album.title }}</option>
                     {% endfor %}
                 </select>
             </section>
@@ -97,11 +97,11 @@
                 >
                     {% for track in data.tracks %}
                     <option
-                        id="{{ track.name }}"
-                        data-file-path="/music/{{ track.artist }}/{{ track.album }}/{{ track.file_name }}"
+                        id="{{ track.id }}"
+                        data-file-path="/music/{{ track.artist_id }}/{{ track.album_id }}/{{ track.file_name }}"
                     >
-                        {{ track.artist }} - {{ track.album }} - {{ track.name
-                        }}
+                        {{ track.artist_id }} - {{ track.album_id }} - {{
+                        track.name }}
                     </option>
                     {% endfor %}
                 </select>

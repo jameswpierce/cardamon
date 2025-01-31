@@ -3,15 +3,33 @@ use std::fs;
 use std::fs::{read_dir, read_to_string};
 use std::path::Path;
 use toml;
+use uuid::Uuid;
 
 use askama::Template;
 
+const ARTIST_NAMESPACE: Uuid = uuid::uuid!("dd625495-4816-4cb8-81f0-13ec4629c2cb");
+const ALBUM_NAMESPACE: Uuid = uuid::uuid!("c117510b-b0dc-4b42-b84d-ddda5d69c5f4");
+const TRACK_NAMESPACE: Uuid = uuid::uuid!("a9c95d7c-c3b4-4217-adcc-8153600e3545");
+
+#[derive(Debug, Deserialize)]
+struct Artist {
+    id: String,
+    name: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Album {
+    id: String,
+    title: String,
+}
+
 #[derive(Debug, Deserialize)]
 struct Track {
+    id: String,
     file_name: String,
     name: String,
-    artist: String,
-    album: String,
+    artist_id: String,
+    album_id: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,8 +51,8 @@ struct Theme {
 
 #[derive(Debug, Deserialize)]
 struct Data {
-    artists: Vec<String>,
-    albums: Vec<String>,
+    artists: Vec<Artist>,
+    albums: Vec<Album>,
     tracks: Vec<Track>,
 }
 
@@ -51,28 +69,51 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config: Config = toml::from_str(&config_raw)?;
     let music_path = Path::new(&config.directories.music);
 
+    let mut artists: Vec<Artist> = vec![];
+    let mut albums: Vec<Album> = vec![];
     let mut tracks: Vec<Track> = vec![];
 
     match read_dir(music_path) {
         Err(why) => panic!("{:?}", why),
-        Ok(artists) => {
-            for artist in artists {
+        Ok(artist_dirs) => {
+            for artist in artist_dirs {
                 match artist {
                     Err(why) => panic!("{:?}", why),
                     Ok(artist) => {
                         let path = artist.path();
                         if path.is_dir() {
+                            let artist_id = Uuid::new_v5(
+                                &ARTIST_NAMESPACE,
+                                &artist.file_name().as_encoded_bytes(),
+                            );
+                            let artist = Artist {
+                                id: artist_id.to_string(),
+                                name: artist.file_name().into_string().unwrap(),
+                            };
+                            artists.push(artist);
                             // println!("artist: {:?}", artist.path());
                             match read_dir(path) {
                                 Err(why) => panic!("{:?}", why),
-                                Ok(albums) => {
-                                    for album in albums {
+                                Ok(album_dirs) => {
+                                    for album in album_dirs {
                                         match album {
                                             Err(why) => panic!("{:?}", why),
                                             Ok(album) => {
                                                 let path = album.path();
                                                 if path.is_dir() {
                                                     // println!("album: {:?}", album.path());
+                                                    let album_id = Uuid::new_v5(
+                                                        &ALBUM_NAMESPACE,
+                                                        &album.file_name().as_encoded_bytes(),
+                                                    );
+                                                    let album = Album {
+                                                        id: album_id.to_string(),
+                                                        title: album
+                                                            .file_name()
+                                                            .into_string()
+                                                            .unwrap(),
+                                                    };
+                                                    albums.push(album);
                                                     match read_dir(path) {
                                                         Err(why) => panic!("{:?}", why),
                                                         Ok(files) => {
@@ -100,10 +141,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                                         //     "MP3 U BASTERD"
                                                                                         // );
                                                                                         let track: Track = Track {
+                                                                                            id: Uuid::new_v5(
+                                                                                                &TRACK_NAMESPACE,
+                                                                                                &file.file_name().as_encoded_bytes(),
+                                                                                            ).to_string(),
                                                                                             file_name: file.file_name().into_string().unwrap(),
                                                                                             name: file.file_name().into_string().unwrap(),
-                                                                                            artist: artist.file_name().into_string().unwrap(),
-                                                                                            album: album.file_name().into_string().unwrap(),
+                                                                                            artist_id: artist_id.to_string(),
+                                                                                            album_id: album_id.to_string(),
                                                                                         };
                                                                                         tracks
                                                                                             .push(
@@ -141,17 +186,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-
-    let mut artists = tracks
-        .iter()
-        .map(|x| x.artist.clone())
-        .collect::<Vec<String>>();
-    artists.dedup();
-    let mut albums = tracks
-        .iter()
-        .map(|x| x.album.clone())
-        .collect::<Vec<String>>();
-    albums.dedup();
 
     let index = IndexTemplate {
         title: config.theme.title,
