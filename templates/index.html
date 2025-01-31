@@ -41,6 +41,9 @@
                         const audio = document.getElementById("audio");
                         audio.src = track.dataset.filePath;
                         audio.play();
+                        document.getElementById(
+                            `album-cover_${track.dataset.albumId}`,
+                        ).display = "block";
                     });
                 });
             });
@@ -144,6 +147,15 @@
         </main>
         <aside class="bg-blue w-full" style="height: 8rem">
             <audio id="audio" controls></audio>
+            {% for album_cover in data.album_covers %}
+            <img
+                src="{{ album_cover.file_name }}"
+                class="album-cover"
+                id="album-cover_{{album_cover.album_id}}"
+                style="display: none"
+                loading="lazy"
+            />
+            {% endfor %}
         </aside>
     </body>
 </html>

@@ -25,6 +25,12 @@ struct Album {
 }
 
 #[derive(Debug, Deserialize)]
+struct AlbumCover {
+    album_id: String,
+    file_name: String,
+}
+
+#[derive(Debug, Deserialize)]
 struct Track {
     id: String,
     file_name: String,
@@ -54,6 +60,7 @@ struct Theme {
 struct Data {
     artists: Vec<Artist>,
     albums: Vec<Album>,
+    album_covers: Vec<AlbumCover>,
     tracks: Vec<Track>,
 }
 
@@ -72,6 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut artists: Vec<Artist> = vec![];
     let mut albums: Vec<Album> = vec![];
+    let mut album_covers: Vec<AlbumCover> = vec![];
     let mut tracks: Vec<Track> = vec![];
 
     match read_dir(music_path) {
@@ -92,7 +100,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 name: artist.file_name().into_string().unwrap(),
                             };
                             artists.push(artist);
-                            // println!("artist: {:?}", artist.path());
                             match read_dir(path) {
                                 Err(why) => panic!("{:?}", why),
                                 Ok(album_dirs) => {
@@ -102,7 +109,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                             Ok(album) => {
                                                 let path = album.path();
                                                 if path.is_dir() {
-                                                    // println!("album: {:?}", album.path());
                                                     let album_id = Uuid::new_v5(
                                                         &ALBUM_NAMESPACE,
                                                         &album.file_name().as_encoded_bytes(),
@@ -127,10 +133,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                         let extension =
                                                                             Path::new(&file_path)
                                                                                 .extension();
-                                                                        // println!(
-                                                                        //     "track: {:?}",
-                                                                        //     &file_path
-                                                                        // );
                                                                         match extension {
                                                                             None => {}
                                                                             Some(extension) => {
@@ -139,9 +141,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                                 {
                                                                                     None => {}
                                                                                     Some("mp3") => {
-                                                                                        // println!(
-                                                                                        //     "MP3 U BASTERD"
-                                                                                        // );
                                                                                         let track: Track = Track {
                                                                                             id: Uuid::new_v5(
                                                                                                 &TRACK_NAMESPACE,
@@ -158,14 +157,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                                                         );
                                                                                     }
                                                                                     Some("jpg") => {
-                                                                                        // println!(
-                                                                                        //     "JPG U BASTERD"
-                                                                                        // );
+                                                                                        let album_cover = AlbumCover {
+                                                                                            album_id: album_id.to_string(),
+                                                                                            file_name: file.file_name().into_string().unwrap(),
+                                                                                        };
+                                                                                        album_covers.push(album_cover);
                                                                                     }
                                                                                     Some("png") => {
-                                                                                        // println!(
-                                                                                        //     "PNG U BASTERD"
-                                                                                        // );
+                                                                                        let album_cover = AlbumCover {
+                                                                                            album_id: album_id.to_string(),
+                                                                                            file_name: file.file_name().into_string().unwrap(),
+                                                                                        };
+                                                                                        album_covers.push(album_cover);
                                                                                     }
                                                                                     Some(&_) => {}
                                                                                 }
@@ -194,6 +197,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         data: Data {
             tracks,
             albums,
+            album_covers,
             artists,
         },
     };
