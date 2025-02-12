@@ -83,13 +83,18 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("reading directories...");
     for entry in WalkDir::new(music_path).into_iter().filter_map(|e| e.ok()) {
-        let extension = entry.path().extension();
-        match extension {
-            None => {}
-            Some(ext) => {
-                println!("{:?}", ext);
-            }
-        };
+        let is_dir = entry.path().is_dir();
+
+        if !is_dir {
+            let extension = entry.path().extension().and_then(|ext| ext.to_str());
+            match extension {
+                None => {}
+                Some("mp3") => {
+                    println!("{:?}", entry.path().display());
+                }
+                Some(&_) => {}
+            };
+        }
     }
     // match read_dir(music_path) {
     //     Err(why) => panic!("{:?}", why),
