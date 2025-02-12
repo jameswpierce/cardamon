@@ -1,3 +1,4 @@
+use id3::{Tag, TagLike};
 use serde::Deserialize;
 use std::fs;
 use std::fs::{read_dir, read_to_string};
@@ -90,7 +91,19 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
             match extension {
                 None => {}
                 Some("mp3") => {
-                    println!("{:?}", entry.path().display());
+                    let tag = Tag::read_from_path(entry.path())?;
+                    let track: Track = {
+                        let id =
+                            Uuid::new_v5(&TRACK_NAMESPACE, &entry.file_name().as_encoded_bytes());
+                        Track {
+                            id: id.to_string(),
+                            file_path: entry.path().to_string_lossy().to_string(),
+                            name: tag.title().unwrap_or("Unknown Title").to_string(),
+                            artist_id: tag.artist().unwrap_or("Unknown Artist").to_string(),
+                            album_id: tag.album().unwrap_or("Unknown Album").to_string(),
+                        }
+                    };
+                    println!("{:?}", track);
                 }
                 Some(&_) => {}
             };

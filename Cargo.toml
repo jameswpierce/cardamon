@@ -7,6 +7,7 @@ edition = "2021"
 askama = "0.12.1"
 axum = "0.8.1"
 clap = { version = "4.5.27", features = ["derive"] }
+id3 = "1.16.2"
 serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.19"
