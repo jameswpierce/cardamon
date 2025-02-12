@@ -6,6 +6,7 @@ use toml;
 use uuid::Uuid;
 
 use askama::Template;
+use walkdir::{DirEntry, Error, WalkDir};
 
 use crate::cardamon::namespaces::{ALBUM_NAMESPACE, ARTIST_NAMESPACE, TRACK_NAMESPACE};
 
@@ -81,116 +82,125 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let mut tracks: Vec<Track> = vec![];
 
     println!("reading directories...");
-    match read_dir(music_path) {
-        Err(why) => panic!("{:?}", why),
-        Ok(artist_dirs) => {
-            for artist in artist_dirs {
-                match artist {
-                    Err(why) => panic!("{:?}", why),
-                    Ok(artist) => {
-                        let path = artist.path();
-                        if path.is_dir() {
-                            let artist_id = Uuid::new_v5(
-                                &ARTIST_NAMESPACE,
-                                &artist.file_name().as_encoded_bytes(),
-                            );
-                            let artist = Artist {
-                                id: artist_id.to_string(),
-                                name: artist.file_name().into_string().unwrap(),
-                            };
-                            artists.push(artist);
-                            match read_dir(path) {
-                                Err(why) => panic!("{:?}", why),
-                                Ok(album_dirs) => {
-                                    for album in album_dirs {
-                                        match album {
-                                            Err(why) => panic!("{:?}", why),
-                                            Ok(album) => {
-                                                let path = album.path();
-                                                if path.is_dir() {
-                                                    let album_id = Uuid::new_v5(
-                                                        &ALBUM_NAMESPACE,
-                                                        &album.file_name().as_encoded_bytes(),
-                                                    );
-                                                    let album = Album {
-                                                        id: album_id.to_string(),
-                                                        artist_id: artist_id.to_string(),
-                                                        title: album
-                                                            .file_name()
-                                                            .into_string()
-                                                            .unwrap(),
-                                                    };
-                                                    albums.push(album);
-                                                    match read_dir(path) {
-                                                        Err(why) => panic!("{:?}", why),
-                                                        Ok(files) => {
-                                                            for file in files {
-                                                                match file {
-                                                                    Err(why) => panic!("{:?}", why),
-                                                                    Ok(file) => {
-                                                                        let file_path = file.path();
-                                                                        println!("{:?}", file_path);
-                                                                        let extension =
-                                                                            Path::new(&file_path)
-                                                                                .extension();
-                                                                        match extension {
-                                                                            None => {}
-                                                                            Some(extension) => {
-                                                                                match extension
-                                                                                    .to_str()
-                                                                                {
-                                                                                    None => {}
-                                                                                    Some("mp3") => {
-                                                                                        let track: Track = Track {
-                                                                                            id: Uuid::new_v5(
-                                                                                                &TRACK_NAMESPACE,
-                                                                                                &file.file_name().as_encoded_bytes(),
-                                                                                            ).to_string(),
-                                                                                            file_path: file.path().to_string_lossy().to_string(),
-                                                                                            name: file.file_name().into_string().unwrap(),
-                                                                                            artist_id: artist_id.to_string(),
-                                                                                            album_id: album_id.to_string(),
-                                                                                        };
-                                                                                        tracks
-                                                                                            .push(
-                                                                                            track,
-                                                                                        );
-                                                                                    }
-                                                                                    Some("jpg") => {
-                                                                                        let album_cover = AlbumCover {
-                                                                                            album_id: album_id.to_string(),
-                                                                                            file_name: file.file_name().into_string().unwrap(),
-                                                                                        };
-                                                                                        album_covers.push(album_cover);
-                                                                                    }
-                                                                                    Some("png") => {
-                                                                                        let album_cover = AlbumCover {
-                                                                                            album_id: album_id.to_string(),
-                                                                                            file_name: file.file_name().into_string().unwrap(),
-                                                                                        };
-                                                                                        album_covers.push(album_cover);
-                                                                                    }
-                                                                                    Some(&_) => {}
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    for entry in WalkDir::new(music_path).into_iter().filter_map(|e| e.ok()) {
+        let extension = entry.path().extension();
+        match extension {
+            None => {}
+            Some(ext) => {
+                println!("{:?}", ext);
             }
-        }
+        };
     }
+    // match read_dir(music_path) {
+    //     Err(why) => panic!("{:?}", why),
+    //     Ok(artist_dirs) => {
+    //         for artist in artist_dirs {
+    //             match artist {
+    //                 Err(why) => panic!("{:?}", why),
+    //                 Ok(artist) => {
+    //                     let path = artist.path();
+    //                     if path.is_dir() {
+    //                         let artist_id = Uuid::new_v5(
+    //                             &ARTIST_NAMESPACE,
+    //                             &artist.file_name().as_encoded_bytes(),
+    //                         );
+    //                         let artist = Artist {
+    //                             id: artist_id.to_string(),
+    //                             name: artist.file_name().into_string().unwrap(),
+    //                         };
+    //                         artists.push(artist);
+    //                         match read_dir(path) {
+    //                             Err(why) => panic!("{:?}", why),
+    //                             Ok(album_dirs) => {
+    //                                 for album in album_dirs {
+    //                                     match album {
+    //                                         Err(why) => panic!("{:?}", why),
+    //                                         Ok(album) => {
+    //                                             let path = album.path();
+    //                                             if path.is_dir() {
+    //                                                 let album_id = Uuid::new_v5(
+    //                                                     &ALBUM_NAMESPACE,
+    //                                                     &album.file_name().as_encoded_bytes(),
+    //                                                 );
+    //                                                 let album = Album {
+    //                                                     id: album_id.to_string(),
+    //                                                     artist_id: artist_id.to_string(),
+    //                                                     title: album
+    //                                                         .file_name()
+    //                                                         .into_string()
+    //                                                         .unwrap(),
+    //                                                 };
+    //                                                 albums.push(album);
+    //                                                 match read_dir(path) {
+    //                                                     Err(why) => panic!("{:?}", why),
+    //                                                     Ok(files) => {
+    //                                                         for file in files {
+    //                                                             match file {
+    //                                                                 Err(why) => panic!("{:?}", why),
+    //                                                                 Ok(file) => {
+    //                                                                     let file_path = file.path();
+    //                                                                     println!("{:?}", file_path);
+    //                                                                     let extension =
+    //                                                                         Path::new(&file_path)
+    //                                                                             .extension();
+    //                                                                     match extension {
+    //                                                                         None => {}
+    //                                                                         Some(extension) => {
+    //                                                                             match extension
+    //                                                                                 .to_str()
+    //                                                                             {
+    //                                                                                 None => {}
+    //                                                                                 Some("mp3") => {
+    //                                                                                     let track: Track = Track {
+    //                                                                                         id: Uuid::new_v5(
+    //                                                                                             &TRACK_NAMESPACE,
+    //                                                                                             &file.file_name().as_encoded_bytes(),
+    //                                                                                         ).to_string(),
+    //                                                                                         file_path: file.path().to_string_lossy().to_string(),
+    //                                                                                         name: file.file_name().into_string().unwrap(),
+    //                                                                                         artist_id: artist_id.to_string(),
+    //                                                                                         album_id: album_id.to_string(),
+    //                                                                                     };
+    //                                                                                     tracks
+    //                                                                                         .push(
+    //                                                                                         track,
+    //                                                                                     );
+    //                                                                                 }
+    //                                                                                 Some("jpg") => {
+    //                                                                                     let album_cover = AlbumCover {
+    //                                                                                         album_id: album_id.to_string(),
+    //                                                                                         file_name: file.file_name().into_string().unwrap(),
+    //                                                                                     };
+    //                                                                                     album_covers.push(album_cover);
+    //                                                                                 }
+    //                                                                                 Some("png") => {
+    //                                                                                     let album_cover = AlbumCover {
+    //                                                                                         album_id: album_id.to_string(),
+    //                                                                                         file_name: file.file_name().into_string().unwrap(),
+    //                                                                                     };
+    //                                                                                     album_covers.push(album_cover);
+    //                                                                                 }
+    //                                                                                 Some(&_) => {}
+    //                                                                             }
+    //                                                                         }
+    //                                                                     }
+    //                                                                 }
+    //                                                             }
+    //                                                         }
+    //                                                     }
+    //                                                 }
+    //                                             }
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     let index = IndexTemplate {
         title: config.theme.title,
