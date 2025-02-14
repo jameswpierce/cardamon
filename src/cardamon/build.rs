@@ -82,7 +82,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     // let mut album_covers: HashMap<String, AlbumCover> = HashMap::new();
     let mut tracks: HashMap<String, Track> = HashMap::new();
 
-    println!("reading directories...");
     for entry in WalkDir::new(music_path).into_iter().filter_map(|e| e.ok()) {
         let is_dir = entry.path().is_dir();
 
@@ -117,7 +116,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                         artist_id: artist_id.to_string(),
                         title: tag.album().unwrap_or("Unknown Album").to_string(),
                     };
-                    println!("{:?}", track);
                     tracks.insert(track.id.clone(), track);
                     artists.insert(artist.id.clone(), artist);
                     albums.insert(album.id.clone(), album);
