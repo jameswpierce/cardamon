@@ -1,4 +1,5 @@
 use crate::cardamon::build;
+use crate::cardamon::config::load_config;
 use axum::Router;
 use notify::{RecursiveMode, Watcher};
 use std::path::Path;
@@ -7,6 +8,7 @@ use tower_http::services::{ServeDir, ServeFile};
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = load_config()?;
     println!("starting server...");
     let (tx, _) = broadcast::channel::<()>(10);
 
@@ -20,7 +22,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => eprintln!("Watch error: {}", e),
     })?;
 
-    watcher.watch(Path::new("music"), RecursiveMode::Recursive)?;
+    watcher.watch(
+        Path::new(&config.directories.music),
+        RecursiveMode::Recursive,
+    )?;
 
     let app = Router::new()
         .route_service("/", ServeFile::new("output/index.html"))

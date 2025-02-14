@@ -1,10 +1,9 @@
+use crate::cardamon::config::load_config;
 use id3::{Tag, TagLike};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
-use std::fs::read_to_string;
 use std::path::Path;
-use toml;
 use uuid::Uuid;
 
 use askama::Template;
@@ -41,23 +40,6 @@ struct Track {
 }
 
 #[derive(Debug, Deserialize)]
-struct Config {
-    directories: Directories,
-    theme: Theme,
-}
-
-#[derive(Debug, Deserialize)]
-struct Directories {
-    music: String,
-    output: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct Theme {
-    title: String,
-}
-
-#[derive(Debug, Deserialize)]
 struct Data {
     artists: HashMap<String, Artist>,
     albums: HashMap<String, Album>,
@@ -72,9 +54,7 @@ struct IndexTemplate {
 }
 
 pub fn build() -> Result<(), Box<dyn std::error::Error>> {
-    let config_raw =
-        read_to_string("config.toml").expect("No config.toml found in working directory.");
-    let config: Config = toml::from_str(&config_raw)?;
+    let config = load_config()?;
     let music_path = Path::new(&config.directories.music);
 
     let mut artists: HashMap<String, Artist> = HashMap::new();
