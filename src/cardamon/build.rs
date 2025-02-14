@@ -1,13 +1,14 @@
 use id3::{Tag, TagLike};
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::fs;
-use std::fs::{read_dir, read_to_string};
+use std::fs::read_to_string;
 use std::path::Path;
 use toml;
 use uuid::Uuid;
 
 use askama::Template;
-use walkdir::{DirEntry, Error, WalkDir};
+use walkdir::WalkDir;
 
 use crate::cardamon::namespaces::{ALBUM_NAMESPACE, ARTIST_NAMESPACE, TRACK_NAMESPACE};
 
@@ -77,10 +78,10 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let config: Config = toml::from_str(&config_raw)?;
     let music_path = Path::new(&config.directories.music);
 
-    let mut artists: Vec<Artist> = vec![];
-    let mut albums: Vec<Album> = vec![];
-    let mut album_covers: Vec<AlbumCover> = vec![];
-    let mut tracks: Vec<Track> = vec![];
+    let mut artists: HashMap<String, Artist> = HashMap::new();
+    let mut albums: HashMap<String, Album> = HashMap::new();
+    let mut album_covers: HashMap<String, AlbumCover> = HashMap::new();
+    let mut tracks: HashMap<String, Track> = HashMap::new();
 
     println!("reading directories...");
     for entry in WalkDir::new(music_path).into_iter().filter_map(|e| e.ok()) {
@@ -95,21 +96,31 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                     let track: Track = {
                         let id =
                             Uuid::new_v5(&TRACK_NAMESPACE, &entry.file_name().as_encoded_bytes());
+                        let album_id = Uuid::new_v5(
+                            &ALBUM_NAMESPACE,
+                            &tag.album().unwrap_or("Unknown Album").as_bytes(),
+                        );
+                        let artist_id = Uuid::new_v5(
+                            &ARTIST_NAMESPACE,
+                            &tag.artist().unwrap_or("Unknown Artist").as_bytes(),
+                        );
                         Track {
                             id: id.to_string(),
                             file_path: entry.path().to_string_lossy().to_string(),
                             name: tag.title().unwrap_or("Unknown Title").to_string(),
-                            artist_id: tag.artist().unwrap_or("Unknown Artist").to_string(),
-                            album_id: tag.album().unwrap_or("Unknown Album").to_string(),
+                            album_id: album_id.to_string(),
+                            artist_id: artist_id.to_string(),
                         }
                     };
                     println!("{:?}", track);
+                    tracks.insert(track.id.clone(), track);
                 }
                 Some(&_) => {}
             };
         }
     }
     // match read_dir(music_path) {
+    println!("{:?}", tracks);
     //     Err(why) => panic!("{:?}", why),
     //     Ok(artist_dirs) => {
     //         for artist in artist_dirs {
@@ -220,23 +231,23 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     //     }
     // }
 
-    let index = IndexTemplate {
-        title: config.theme.title,
-        data: Data {
-            tracks,
-            albums,
-            album_covers,
-            artists,
-        },
-    };
+    // let index = IndexTemplate {
+    //     title: config.theme.title,
+    //     data: Data {
+    //         tracks,
+    //         albums,
+    //         album_covers,
+    //         artists,
+    //     },
+    // };
 
-    let index_html = index.render().unwrap();
-    let output_path = Path::new(&config.directories.output);
+    // let index_html = index.render().unwrap();
+    // let output_path = Path::new(&config.directories.output);
 
-    match fs::write(output_path.join("index.html"), index_html) {
-        Err(why) => panic!("{:?}", why),
-        Ok(_) => {}
-    };
+    // match fs::write(output_path.join("index.html"), index_html) {
+    //     Err(why) => panic!("{:?}", why),
+    //     Ok(_) => {}
+    // };
 
     Ok(())
 }
