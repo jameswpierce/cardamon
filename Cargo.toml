@@ -9,6 +9,7 @@ axum = "0.8.1"
 clap = { version = "4.5.27", features = ["derive"] }
 id3 = "1.16.2"
 notify = "8.0.0"
+notify-debouncer-mini = "0.6.0"
 serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.19"

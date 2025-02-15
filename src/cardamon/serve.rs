@@ -1,28 +1,30 @@
 use crate::cardamon::build;
 use crate::cardamon::config::load_config;
 use axum::Router;
-use notify::{RecursiveMode, Watcher};
+use notify_debouncer_mini::notify::{RecursiveMode, Watcher};
+use notify_debouncer_mini::{new_debouncer, DebounceEventResult};
 use std::path::Path;
-use tokio::sync::broadcast;
+use std::time::Duration;
 use tower_http::services::{ServeDir, ServeFile};
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config()?;
     println!("starting server...");
-    let (tx, _) = broadcast::channel::<()>(10);
 
-    let watch_tx = tx.clone();
-    let mut watcher = notify::recommended_watcher(move |res| match res {
-        Ok(_) => {
-            println!("Change detected, triggering rebuild...");
-            let _ = build::build();
-            let _ = watch_tx.send(());
-        }
-        Err(e) => eprintln!("Watch error: {}", e),
-    })?;
+    let mut debouncer = new_debouncer(
+        Duration::from_secs(1),
+        |res: DebounceEventResult| match res {
+            Ok(_) => {
+                println!("Change detected, triggering rebuild...");
+                let _ = build::build();
+            }
+            Err(e) => println!("Error {:?}", e),
+        },
+    )
+    .unwrap();
 
-    watcher.watch(
+    debouncer.watcher().watch(
         Path::new(&config.directories.music),
         RecursiveMode::Recursive,
     )?;
