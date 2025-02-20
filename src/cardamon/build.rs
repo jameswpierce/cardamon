@@ -26,11 +26,11 @@ struct Album {
     tracks: HashMap<String, Track>,
 }
 
-#[derive(Debug, Deserialize)]
-struct AlbumCover {
-    album_id: String,
-    file_name: String,
-}
+// #[derive(Debug, Deserialize)]
+// struct AlbumCover {
+//     album_id: String,
+//     file_name: String,
+// }
 
 #[derive(Debug, Deserialize)]
 struct Track {
@@ -178,8 +178,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
             };
         }
     }
-
-    println!("{:?}", artists);
 
     let index = IndexTemplate {
         title: config.theme.title,

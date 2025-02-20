@@ -1,7 +1,7 @@
 use crate::cardamon::build;
 use crate::cardamon::config::load_config;
 use axum::Router;
-use notify_debouncer_mini::notify::{RecursiveMode, Watcher};
+use notify_debouncer_mini::notify::RecursiveMode;
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult};
 use std::path::Path;
 use std::time::Duration;
