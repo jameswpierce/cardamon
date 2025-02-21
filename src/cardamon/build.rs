@@ -1,7 +1,7 @@
 use crate::cardamon::config::load_config;
 use id3::{Tag, TagLike};
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
@@ -15,7 +15,7 @@ use crate::cardamon::namespaces::{ALBUM_NAMESPACE, ARTIST_NAMESPACE, TRACK_NAMES
 struct Artist {
     id: String,
     name: String,
-    albums: HashMap<String, Album>,
+    albums: BTreeMap<String, Album>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -23,7 +23,7 @@ struct Album {
     id: String,
     artist_id: String,
     title: String,
-    tracks: HashMap<String, Track>,
+    tracks: Vec<Track>,
 }
 
 // #[derive(Debug, Deserialize)]
@@ -44,7 +44,7 @@ struct Track {
 
 #[derive(Debug, Deserialize)]
 struct Data {
-    artists: HashMap<String, Artist>,
+    artists: BTreeMap<String, Artist>,
 }
 
 #[derive(Template)]
@@ -58,9 +58,8 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config()?;
     let music_path = Path::new(&config.directories.music);
 
-    let mut artists: HashMap<String, Artist> = HashMap::new();
+    let mut artists: BTreeMap<String, Artist> = BTreeMap::new();
     // let mut album_covers: HashMap<String, AlbumCover> = HashMap::new();
-    // let mut tracks: HashMap<String, Track> = HashMap::new();
 
     for entry in WalkDir::new(music_path).into_iter().filter_map(|e| e.ok()) {
         let is_dir = entry.path().is_dir();
@@ -71,18 +70,14 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                 None => {}
                 Some("mp3") => {
                     let tag = Tag::read_from_path(entry.path())?;
-                    let artist_id = Uuid::new_v5(
-                        &ARTIST_NAMESPACE,
-                        &tag.artist().unwrap_or("Unknown Artist").as_bytes(),
-                    )
-                    .to_string();
-                    let album_id = Uuid::new_v5(
-                        &ALBUM_NAMESPACE,
-                        &tag.album().unwrap_or("Unknown Album").as_bytes(),
-                    )
-                    .to_string();
-                    match artists.get_mut(&artist_id) {
-                        Some(artist) => match artist.albums.get_mut(&album_id) {
+                    let artist_name = tag.artist().unwrap_or("Unknown Artist").to_string();
+                    let album_title = tag.album().unwrap_or("Unknown Album").to_string();
+                    let artist_id =
+                        Uuid::new_v5(&ARTIST_NAMESPACE, &artist_name.as_bytes()).to_string();
+                    let album_id =
+                        Uuid::new_v5(&ALBUM_NAMESPACE, &album_title.as_bytes()).to_string();
+                    match artists.get_mut(&artist_name) {
+                        Some(artist) => match artist.albums.get_mut(&album_title) {
                             Some(album) => {
                                 let id = Uuid::new_v5(
                                     &TRACK_NAMESPACE,
@@ -97,14 +92,15 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                     album_id: album_id.to_string(),
                                     artist_id: artist_id.to_string(),
                                 };
-                                album.tracks.insert(id.clone(), track);
+                                album.tracks.push(track);
+                                album.tracks.sort_by(|a, b| a.number.cmp(&b.number));
                             }
                             None => {
                                 let mut album = Album {
                                     id: album_id.clone(),
                                     artist_id: artist_id.clone(),
                                     title: tag.album().unwrap_or("Unknown Album").to_string(),
-                                    tracks: HashMap::new(),
+                                    tracks: vec![],
                                 };
                                 let id = Uuid::new_v5(
                                     &TRACK_NAMESPACE,
@@ -119,58 +115,38 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                     album_id: album_id.to_string(),
                                     artist_id: artist_id.to_string(),
                                 };
-                                album.tracks.insert(id.clone(), track);
-                                artist.albums.insert(album_id.clone(), album);
+                                album.tracks.push(track);
+                                artist.albums.insert(album.title.clone(), album);
                             }
                         },
                         None => {
                             let mut artist = Artist {
                                 id: artist_id.to_string(),
                                 name: tag.artist().unwrap_or("Unknown Artist").to_string(),
-                                albums: HashMap::new(),
+                                albums: BTreeMap::new(),
                             };
-                            match artist.albums.get_mut(&album_id) {
-                                Some(album) => {
-                                    let id = Uuid::new_v5(
-                                        &TRACK_NAMESPACE,
-                                        &entry.file_name().as_encoded_bytes(),
-                                    )
-                                    .to_string();
-                                    let track = Track {
-                                        id: id.clone(),
-                                        file_path: entry.path().to_string_lossy().to_string(),
-                                        number: tag.track().unwrap_or(0),
-                                        name: tag.title().unwrap_or("Unknown Title").to_string(),
-                                        album_id: album_id.to_string(),
-                                        artist_id: artist_id.to_string(),
-                                    };
-                                    album.tracks.insert(id.clone(), track);
-                                }
-                                None => {
-                                    let mut album = Album {
-                                        id: album_id.clone(),
-                                        artist_id: artist_id.clone(),
-                                        title: tag.album().unwrap_or("Unknown Album").to_string(),
-                                        tracks: HashMap::new(),
-                                    };
-                                    let id = Uuid::new_v5(
-                                        &TRACK_NAMESPACE,
-                                        &entry.file_name().as_encoded_bytes(),
-                                    )
-                                    .to_string();
-                                    let track = Track {
-                                        id: id.clone(),
-                                        file_path: entry.path().to_string_lossy().to_string(),
-                                        number: tag.track().unwrap_or(0),
-                                        name: tag.title().unwrap_or("Unknown Title").to_string(),
-                                        album_id: album_id.to_string(),
-                                        artist_id: artist_id.to_string(),
-                                    };
-                                    album.tracks.insert(id.clone(), track);
-                                    artist.albums.insert(album_id.clone(), album);
-                                }
-                            }
-                            artists.insert(artist_id.clone(), artist);
+                            let mut album = Album {
+                                id: album_id.clone(),
+                                artist_id: artist_id.clone(),
+                                title: tag.album().unwrap_or("Unknown Album").to_string(),
+                                tracks: vec![],
+                            };
+                            let id = Uuid::new_v5(
+                                &TRACK_NAMESPACE,
+                                &entry.file_name().as_encoded_bytes(),
+                            )
+                            .to_string();
+                            let track = Track {
+                                id: id.clone(),
+                                file_path: entry.path().to_string_lossy().to_string(),
+                                number: tag.track().unwrap_or(0),
+                                name: tag.title().unwrap_or("Unknown Title").to_string(),
+                                album_id: album_id.to_string(),
+                                artist_id: artist_id.to_string(),
+                            };
+                            album.tracks.push(track);
+                            artist.albums.insert(album_title.clone(), album);
+                            artists.insert(artist_name.clone(), artist);
                         }
                     };
                 }

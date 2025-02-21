@@ -119,17 +119,16 @@
                     style="height: calc(40vh - 4rem)"
                     multiple
                 >
-                    {% for (id, artist) in data.artists %}
-                        {% for (id, album) in artist.albums %}
-                        <option
-                            id="{{ album.id }}"
-                            data-artist-id="{{ album.artist_id }}"
-                            class="bg-color-{{ (loop.index % 36) + 1 }}"
-                        >
-                            {{ album.title }}
-                        </option>
-                        {% endfor %}
-                    {% endfor %}
+                    {% for (id, artist) in data.artists %} {% for (id, album) in
+                    artist.albums %}
+                    <option
+                        id="{{ album.id }}"
+                        data-artist-id="{{ album.artist_id }}"
+                        class="bg-color-{{ (loop.index % 36) + 1 }}"
+                    >
+                        {{ album.title }}
+                    </option>
+                    {% endfor %} {% endfor %}
                 </select>
             </section>
             <section id="bottom" style="max-height: calc(60vh - 4rem)">
@@ -139,29 +138,20 @@
                     style="height: calc(60vh - 4rem)"
                     multiple
                 >
-                    {% for (id, artist) in data.artists %}
-                        {% for (id, album) in artist.albums %}
-                            {% for (id, track) in album.tracks %}
-                                <option
-                                    id="{{ track.id }}"
-                                    class="bg-color-{{ (loop.index % 36) + 1 }}"
-                                    data-number="{{ track.number }}"
-                                    data-file-path="/{{ track.file_path }}"
-                                    data-artist-id="{{ track.artist_id }}"
-                                    data-album-id="{{ track.album_id }}"
-                                >
-                                    <div>
-                                        {{ artist.name
-                                        }} -
-                                    </div>
-                                    <div>
-                                        {{ album.title }}
-                                        -
-                                    <div>{{ track.name }}</div>
-                                </option>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
+                    {% for (id, artist) in data.artists %} {% for (id, album) in
+                    artist.albums %} {% for track in album.tracks %}
+                    <option
+                        id="{{ track.id }}"
+                        class="bg-color-{{ (loop.index % 36) + 1 }}"
+                        data-number="{{ track.number }}"
+                        data-file-path="/{{ track.file_path }}"
+                        data-artist-id="{{ track.artist_id }}"
+                        data-album-id="{{ track.album_id }}"
+                    >
+                        {{ track.number }} {{ artist.name }} - {{ album.title }}
+                        - {{ track.name }}
+                    </option>
+                    {% endfor %} {% endfor %} {% endfor %}
                 </select>
             </section>
         </main>
