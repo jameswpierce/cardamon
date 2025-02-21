@@ -29,6 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             cardamon::build::build()?;
         }
         Some(Commands::Serve {}) => {
+            println!("building cardamon...");
+            cardamon::build::build()?;
             println!("starting cardamon server...");
             cardamon::serve::main()?;
         }
