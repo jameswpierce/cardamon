@@ -5,9 +5,6 @@ pub mod cardamon;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    #[arg(short, long)]
-    output: Option<String>,
-
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -22,6 +19,8 @@ enum Commands {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+
+    println!("cardamon v{}", env!("CARGO_PKG_VERSION"));
 
     match &cli.command {
         Some(Commands::Build {}) => {

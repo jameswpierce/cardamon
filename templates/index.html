@@ -11,6 +11,7 @@
 
                 artists.querySelectorAll("option").forEach((artist) => {
                     artist.addEventListener("click", () => {
+                        console.log(event);
                         const artistId = artist.id;
                         albums.querySelectorAll("option").forEach((album) => {
                             album.style.display = "none";
@@ -27,7 +28,8 @@
                     });
                 });
                 albums.querySelectorAll("option").forEach((album) => {
-                    album.addEventListener("click", () => {
+                    album.addEventListener("click", (event) => {
+                        console.log(event);
                         const albumId = album.id;
                         tracks.querySelectorAll("option").forEach((track) => {
                             track.style.display = "none";
@@ -37,15 +39,12 @@
                         });
                     });
                 });
-                tracks.querySelectorAll("option").forEach((track) => {
-                    track.addEventListener("dblclick", () => {
-                        const audio = document.getElementById("audio");
-                        audio.src = track.dataset.filePath;
-                        audio.play();
-                        document.getElementById(
-                            `album-cover_${track.dataset.albumId}`,
-                        ).display = "block";
-                    });
+                tracks.addEventListener("dblclick", (event) => {
+                    console.log(event);
+                    const tracks = event.target.parentElement.selectedOptions;
+                    const audio = document.getElementById("audio");
+                    audio.src = tracks[0].dataset.filePath;
+                    audio.play();
                 });
             });
         </script>
@@ -69,11 +68,17 @@
                 /*For WebKit Browsers*/
                 width: 0;
             }
+            option, button {
+                cursor: pointer;
+            }
             {% for i in (1..=36) %}
             .bg-color-{{ i }} {
                 background-color: hsl({{ (i - 1) * 10}}, 100%, 80%);
             }
             .bg-color-{{ i }}:active {
+                background-color: hsl({{ (((i - 1) * 10) + 180) % 360 }}, 100%, 80%);
+            }
+            .bg-color-{{ i }}:hover {
                 background-color: hsl({{ (((i - 1) * 10) + 180) % 360 }}, 100%, 80%);
             }
             {% endfor %}
@@ -157,6 +162,12 @@
         </main>
         <aside class="bg-blue w-full" style="height: 8rem">
             <audio id="audio" controls></audio>
+            <span id="now-playing"></span>
+            <button id="play">Play</button>
+            <button id="prev">Prev</button>
+            <button id="next">Next</button>
+            <button id="repeat">Repeat</button>
+            <button id="shuffle">Shuffle</button>
         </aside>
     </body>
 </html>
