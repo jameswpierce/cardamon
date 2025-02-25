@@ -1,6 +1,7 @@
 [directories]
 music = "music/"
 output = "output/"
+templates = "templates/"
 
 [theme]
 title = "cardamon's house"

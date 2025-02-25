@@ -12,6 +12,7 @@ pub struct Config {
 pub struct Directories {
     pub music: String,
     pub output: String,
+    pub templates: String,
 }
 
 #[derive(Debug, Deserialize)]

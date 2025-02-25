@@ -8,7 +8,7 @@ use std::time::Duration;
 use tower_http::services::{ServeDir, ServeFile};
 
 #[tokio::main]
-pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config()?;
     println!("starting server...");
 
@@ -28,6 +28,13 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Path::new(&config.directories.music),
         RecursiveMode::Recursive,
     )?;
+
+    if dev_mode == true {
+        debouncer.watcher().watch(
+            Path::new(&config.directories.templates),
+            RecursiveMode::Recursive,
+        )?;
+    }
 
     let app = Router::new()
         .route_service("/", ServeFile::new("output/index.html"))

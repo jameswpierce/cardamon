@@ -15,6 +15,8 @@ enum Commands {
     Build {},
     // starts the server
     Serve {},
+    // starts server in dev mode (rebuilds with changes to templates folder)
+    Dev {},
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,7 +33,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("building cardamon...");
             cardamon::build::build()?;
             println!("starting cardamon server...");
-            cardamon::serve::main()?;
+            cardamon::serve::serve(false)?;
+        }
+        Some(Commands::Dev {}) => {
+            println!("building cardamon...");
+            cardamon::build::build()?;
+            println!("starting cardamon server in dev mode...");
+            cardamon::serve::serve(true)?;
         }
         None => {}
     }

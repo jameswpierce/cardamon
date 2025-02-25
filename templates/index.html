@@ -4,11 +4,12 @@
         <meta charset="UTF-8" />
         <title>{{ title }}</title>
         <script>
+            let queue = new Map();
             document.addEventListener("DOMContentLoaded", () => {
                 const artists = document.getElementById("artists");
                 const albums = document.getElementById("albums");
                 const tracks = document.getElementById("tracks");
-
+                const audio = document.getElementById("audio");
                 artists.querySelectorAll("option").forEach((artist) => {
                     artist.addEventListener("click", () => {
                         console.log(event);
@@ -26,24 +27,90 @@
                             }
                         });
                     });
+                    artist.addEventListener("dblclick", (event) => {
+                        console.log(event);
+                        queue.clear();
+                        const artistId = artist.id;
+                        tracks
+                            .querySelectorAll("option")
+                            .forEach((trackOption) => {
+                                if (trackOption.dataset.artistId === artistId) {
+                                    const { id } = trackOption;
+                                    const {
+                                        number,
+                                        filePath,
+                                        artistId,
+                                        albumId,
+                                    } = trackOption.dataset;
+                                    queue.set(id, {
+                                        number,
+                                        filePath,
+                                        artistId,
+                                        albumId,
+                                    });
+                                }
+                            });
+                        audio.src = queue.values().next().value.filePath;
+                        audio.play();
+                    });
                 });
                 albums.querySelectorAll("option").forEach((album) => {
                     album.addEventListener("click", (event) => {
                         console.log(event);
                         const albumId = album.id;
-                        tracks.querySelectorAll("option").forEach((track) => {
-                            track.style.display = "none";
-                            if (track.dataset.albumId === albumId) {
-                                track.style.display = "block";
-                            }
-                        });
+                        tracks
+                            .querySelectorAll("option")
+                            .forEach((trackOption) => {
+                                trackOption.style.display = "none";
+                                if (trackOption.dataset.albumId === albumId) {
+                                    trackOption.style.display = "block";
+                                }
+                            });
+                    });
+                    album.addEventListener("dblclick", (event) => {
+                        console.log(event);
+                        queue.clear();
+                        const albumId = album.id;
+                        tracks
+                            .querySelectorAll("option")
+                            .forEach((trackOption) => {
+                                if (trackOption.dataset.albumId === albumId) {
+                                    const { id } = trackOption;
+                                    const {
+                                        number,
+                                        filePath,
+                                        artistId,
+                                        albumId,
+                                    } = trackOption.dataset;
+                                    queue.set(id, {
+                                        number,
+                                        filePath,
+                                        artistId,
+                                        albumId,
+                                    });
+                                }
+                            });
+                        audio.src = queue.values().next().value.filePath;
+                        audio.play();
                     });
                 });
                 tracks.addEventListener("dblclick", (event) => {
-                    console.log(event);
-                    const tracks = event.target.parentElement.selectedOptions;
-                    const audio = document.getElementById("audio");
-                    audio.src = tracks[0].dataset.filePath;
+                    const trackOptions =
+                        event.target.parentElement.selectedOptions;
+                    queue.clear();
+                    for (trackOption of trackOptions) {
+                        const { id } = trackOption;
+                        const { number, filePath, artistId, albumId } =
+                            trackOption.dataset;
+                        queue.set(id, {
+                            number,
+                            filePath,
+                            artistId,
+                            albumId,
+                        });
+                    }
+
+                    audio.src = queue.values().next().value.filePath;
                     audio.play();
                 });
             });
