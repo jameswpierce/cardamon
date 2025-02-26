@@ -7,13 +7,16 @@
             let queue = new Map();
             document.addEventListener("DOMContentLoaded", () => {
                 const artists = document.getElementById("artists");
+                const artistOptions = artists.querySelectorAll("option");
                 const albums = document.getElementById("albums");
+                const albumOptions = albums.querySelectorAll("option");
                 const tracks = document.getElementById("tracks");
+                const trackOptions = tracks.querySelectorAll("option");
                 const audio = document.getElementById("audio");
 
                 const updateQueueByDataset = ({ key, value }) => {
                     queue.clear();
-                    tracks.querySelectorAll("option").forEach((trackOption) => {
+                    trackOptions.forEach((trackOption) => {
                         if (trackOption.dataset[key] === value) {
                             const { id } = trackOption;
                             const { number, filePath, artistId, albumId } =
@@ -43,19 +46,28 @@
                     }
                 };
 
+                const showHide = (elements, { key, value }) => {
+                    elements.forEach((element) => {
+                        if (element.dataset[key] === value) {
+                            element.style.display = "block";
+                            return;
+                        }
+                        if (element.style.display == "none") {
+                            return;
+                        }
+                        element.style.display = "none";
+                    });
+                };
+
                 artists.addEventListener("click", () => {
                     const artistId = event.target.id;
-                    albums.querySelectorAll("option").forEach((album) => {
-                        album.style.display = "none";
-                        if (album.dataset.artistId === artistId) {
-                            album.style.display = "block";
-                        }
+                    showHide(albumOptions, {
+                        key: "artistId",
+                        value: artistId,
                     });
-                    tracks.querySelectorAll("option").forEach((track) => {
-                        track.style.display = "none";
-                        if (track.dataset.artistId === artistId) {
-                            track.style.display = "block";
-                        }
+                    showHide(trackOptions, {
+                        key: "artistId",
+                        value: artistId,
                     });
                 });
                 artists.addEventListener("dblclick", (event) => {
@@ -66,11 +78,9 @@
                 });
                 albums.addEventListener("click", (event) => {
                     const albumId = event.target.id;
-                    tracks.querySelectorAll("option").forEach((trackOption) => {
-                        trackOption.style.display = "none";
-                        if (trackOption.dataset.albumId === albumId) {
-                            trackOption.style.display = "block";
-                        }
+                    showHide(trackOptions, {
+                        key: "albumId",
+                        value: albumId,
                     });
                 });
                 albums.addEventListener("dblclick", (event) => {
