@@ -4,18 +4,25 @@
         <meta charset="UTF-8" />
         <title>{{ title }}</title>
         <script>
-            let queue = new Map();
             document.addEventListener("DOMContentLoaded", () => {
+                let queue = new Map();
+                let queueIds = [];
+                let queueIndex = 0;
+                let isPlaying = false;
                 const artists = document.getElementById("artists");
-                const artistOptions = artists.querySelectorAll("option");
                 const albums = document.getElementById("albums");
                 const albumOptions = albums.querySelectorAll("option");
                 const tracks = document.getElementById("tracks");
                 const trackOptions = tracks.querySelectorAll("option");
                 const audio = document.getElementById("audio");
+                const playButton = document.getElementById("play");
+                const nextButton = document.getElementById("next");
+                const prevButton = document.getElementById("prev");
 
                 const updateQueueByDataset = ({ key, value }) => {
                     queue.clear();
+                    queueIds = [];
+                    queueIndex = 0;
                     trackOptions.forEach((trackOption) => {
                         if (trackOption.dataset[key] === value) {
                             const { id } = trackOption;
@@ -27,12 +34,16 @@
                                 artistId,
                                 albumId,
                             });
+                            queueIds.push(id);
                         }
                     });
+                    audio.src = queue.get(queueIds[queueIndex]).filePath;
                 };
 
                 const updateQueue = (trackOptions) => {
                     queue.clear();
+                    queueIds = [];
+                    queueIndex = 0;
                     for (trackOption of trackOptions) {
                         const { id } = trackOption;
                         const { number, filePath, artistId, albumId } =
@@ -43,7 +54,9 @@
                             artistId,
                             albumId,
                         });
+                        queueIds.push(id);
                     }
+                    audio.src = queue.get(queueIds[queueIndex]).filePath;
                 };
 
                 const showHide = (elements, { key, value }) => {
@@ -57,6 +70,29 @@
                         }
                         element.style.display = "none";
                     });
+                };
+
+                const prev = () => {
+                    if (queueIndex > 0) {
+                        queueIndex -= 1;
+                    }
+                    audio.src = queue.get(queueIds[queueIndex]).filePath;
+                    play();
+                };
+                const next = () => {
+                    if (queueIndex <= queueIds.length) {
+                        queueIndex += 1;
+                    }
+                    audio.src = queue.get(queueIds[queueIndex]).filePath;
+                    play();
+                };
+                const play = () => {
+                    isPlaying = true;
+                    audio.play();
+                };
+                const pause = () => {
+                    isPlaying = false;
+                    audio.pause();
                 };
 
                 artists.addEventListener("click", () => {
@@ -73,8 +109,7 @@
                 artists.addEventListener("dblclick", (event) => {
                     const artistId = event.target.id;
                     updateQueueByDataset({ key: "artistId", value: artistId });
-                    audio.src = queue.values().next().value.filePath;
-                    audio.play();
+                    play();
                 });
                 albums.addEventListener("click", (event) => {
                     const albumId = event.target.id;
@@ -86,13 +121,26 @@
                 albums.addEventListener("dblclick", (event) => {
                     const albumId = event.target.id;
                     updateQueueByDataset({ key: "albumId", value: albumId });
-                    audio.src = queue.values().next().value.filePath;
-                    audio.play();
+                    play();
                 });
                 tracks.addEventListener("dblclick", (event) => {
                     updateQueue(event.target.parentElement.selectedOptions);
-                    audio.src = queue.values().next().value.filePath;
-                    audio.play();
+                    play();
+                });
+                nextButton.addEventListener("click", () => {
+                    next();
+                });
+                audio.addEventListener("ended", () => {
+                    next();
+                });
+                navigator.mediaSession.setActionHandler("nexttrack", () => {
+                    next();
+                });
+                prevButton.addEventListener("click", () => {
+                    prev();
+                });
+                playButton.addEventListener("click", () => {
+                    isPlaying ? pause() : play();
                 });
             });
         </script>
