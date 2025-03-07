@@ -38,6 +38,7 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route_service("/", ServeFile::new("output/index.html"))
+        .route_service("/music", ServeDir::new(&config.directories.music))
         .fallback_service(
             ServeDir::new("output").not_found_service(ServeFile::new("output/index.html")),
         );

@@ -80,7 +80,11 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                     .to_string();
                                     let track = Track {
                                         id: id.clone(),
-                                        file_path: entry.path().to_string_lossy().to_string(),
+                                        file_path: entry
+                                            .path()
+                                            .to_string_lossy()
+                                            .to_string()
+                                            .replace(&config.directories.music, ""),
                                         number: tag.track().unwrap_or(0),
                                         name: tag.title().unwrap_or("Unknown Title").to_string(),
                                         album_id: album_id.to_string(),
@@ -103,7 +107,11 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                     .to_string();
                                     let track = Track {
                                         id: id.clone(),
-                                        file_path: entry.path().to_string_lossy().to_string(),
+                                        file_path: entry
+                                            .path()
+                                            .to_string_lossy()
+                                            .to_string()
+                                            .replace(&config.directories.music, ""),
                                         number: tag.track().unwrap_or(0),
                                         name: tag.title().unwrap_or("Unknown Title").to_string(),
                                         album_id: album_id.to_string(),
@@ -132,7 +140,11 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                 .to_string();
                                 let track = Track {
                                     id: id.clone(),
-                                    file_path: entry.path().to_string_lossy().to_string(),
+                                    file_path: entry
+                                        .path()
+                                        .to_string_lossy()
+                                        .to_string()
+                                        .replace(&config.directories.music, ""),
                                     number: tag.track().unwrap_or(0),
                                     name: tag.title().unwrap_or("Unknown Title").to_string(),
                                     album_id: album_id.to_string(),
