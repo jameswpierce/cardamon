@@ -9,6 +9,7 @@
                 let queueIds = [];
                 let queueIndex = 0;
                 let isPlaying = false;
+                const queueElement = document.getElementById("queue");
                 const artists = document.getElementById("artists");
                 const albums = document.getElementById("albums");
                 const albumOptions = albums.querySelectorAll("option");
@@ -26,16 +27,39 @@
                     trackOptions.forEach((trackOption) => {
                         if (trackOption.dataset[key] === value) {
                             const { id } = trackOption;
-                            const { number, filePath, artistId, albumId } =
-                                trackOption.dataset;
+                            const {
+                                number,
+                                filePath,
+                                artistId,
+                                albumId,
+                                artist,
+                                album,
+                                name,
+                            } = trackOption.dataset;
                             queue.set(id, {
                                 number,
                                 filePath,
                                 artistId,
                                 albumId,
+                                artist,
+                                album,
+                                name,
                             });
                             queueIds.push(id);
                         }
+                    });
+                    queueElement.innerHTML = "";
+                    queue.forEach((track) => {
+                        console.log(track);
+                        const option = new Option(
+                            `${track.artist} - ${track.album} - ${track.name}`,
+                            track.filePath,
+                        );
+                        option.setAttribute(
+                            "class",
+                            `bg-color-${(track.number % 36) + 1}`,
+                        );
+                        queueElement.appendChild(option);
                     });
                     audio.src = queue.get(queueIds[queueIndex]).filePath;
                 };
@@ -46,16 +70,39 @@
                     queueIndex = 0;
                     for (trackOption of trackOptions) {
                         const { id } = trackOption;
-                        const { number, filePath, artistId, albumId } =
-                            trackOption.dataset;
+                        const {
+                            number,
+                            filePath,
+                            artistId,
+                            albumId,
+                            artist,
+                            album,
+                            name,
+                        } = trackOption.dataset;
                         queue.set(id, {
                             number,
                             filePath,
                             artistId,
                             albumId,
+                            artist,
+                            album,
+                            name,
                         });
                         queueIds.push(id);
                     }
+                    queueElement.innerHTML = "";
+                    queue.forEach((track) => {
+                        console.log(track);
+                        const option = new Option(
+                            `${track.artist} - ${track.album} - ${track.name}`,
+                            track.filePath,
+                        );
+                        option.setAttribute(
+                            "class",
+                            `bg-color-${(track.number % 36) + 1}`,
+                        );
+                        queueElement.appendChild(option);
+                    });
                     audio.src = queue.get(queueIds[queueIndex]).filePath;
                 };
 
@@ -200,6 +247,12 @@
                 style="max-height: calc(40vh - 4rem); height: calc(40vh - 4rem)"
             >
                 <select
+                    id="queue"
+                    class="w-full"
+                    style="height: calc(40vh - 4rem)"
+                    multiple
+                ></select>
+                <select
                     id="artists"
                     class="w-full"
                     style="height: calc(40vh - 4rem)"
@@ -249,6 +302,9 @@
                         data-file-path="/music/{{ track.file_path }}"
                         data-artist-id="{{ track.artist_id }}"
                         data-album-id="{{ track.album_id }}"
+                        data-artist="{{ artist.name }}"
+                        data-album="{{ album.title }}"
+                        data-name="{{ track.name }}"
                     >
                         {{ track.number }} {{ artist.name }} - {{ album.title }}
                         - {{ track.name }}
