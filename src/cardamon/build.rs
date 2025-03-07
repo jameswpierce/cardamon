@@ -1,24 +1,23 @@
 use crate::cardamon::config::load_config;
 use id3::{Tag, TagLike};
-use serde::Deserialize;
+use minijinja::{Environment, context};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
-
-use askama::Template;
 use walkdir::WalkDir;
 
 use crate::cardamon::namespaces::{ALBUM_NAMESPACE, ARTIST_NAMESPACE, TRACK_NAMESPACE};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Artist {
     id: String,
     name: String,
     albums: BTreeMap<String, Album>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Album {
     id: String,
     artist_id: String,
@@ -32,7 +31,7 @@ struct Album {
 //     file_name: String,
 // }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Track {
     id: String,
     number: u32,
@@ -42,20 +41,14 @@ struct Track {
     album_id: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Data {
     artists: BTreeMap<String, Artist>,
 }
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct IndexTemplate {
-    title: String,
-    data: Data,
-}
-
 pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config()?;
+    let mut env = Environment::new();
     let music_path = Path::new(&config.directories.music);
 
     let mut artists: BTreeMap<String, Artist> = BTreeMap::new();
@@ -158,12 +151,17 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let index = IndexTemplate {
-        title: config.theme.title,
-        data: Data { artists },
-    };
+    let index = fs::read_to_string("templates/index.html")
+        .expect("No template/index.html found in working directory.");
+    env.add_template_owned("index", index).unwrap();
 
-    let index_html = index.render().unwrap();
+    let template = env.get_template("index").unwrap();
+    let index_html = template
+        .render(context! {
+            title => config.theme.title,
+            data => Data { artists },
+        })
+        .unwrap();
     let output_path = Path::new(&config.directories.output);
 
     match fs::write(output_path.join("index.html"), index_html) {

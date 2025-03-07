@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-askama = "0.12.1"
 axum = "0.8.1"
 clap = { version = "4.5.27", features = ["derive"] }
 id3 = "1.16.2"
+minijinja = { version = "2.8.0", features = ["loader"] }
 notify = "8.0.0"
 notify-debouncer-mini = "0.6.0"
 serde = { version = "1.0.217", features = ["derive"] }

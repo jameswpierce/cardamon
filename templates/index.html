@@ -167,7 +167,7 @@
             option, button {
                 cursor: pointer;
             }
-            {% for i in (1..=36) %}
+            {%- for i in range(1, 36) -%}
             .bg-color-{{ i }} {
                 background-color: hsl({{ (i - 1) * 10}}, 100%, 80%);
             }
@@ -177,7 +177,7 @@
             .bg-color-{{ i }}:hover {
                 background-color: hsl({{ (((i - 1) * 10) + 180) % 360 }}, 100%, 80%);
             }
-            {% endfor %}
+            {%- endfor -%}
             .flex {
                 display: flex;
             }
@@ -205,14 +205,14 @@
                     style="height: calc(40vh - 4rem)"
                     multiple
                 >
-                    {% for (id, artist) in data.artists %}
+                    {%- for (id, artist) in data.artists|items -%}
                     <option
                         id="{{ artist.id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                     >
                         {{ artist.name }}
                     </option>
-                    {% endfor %}
+                    {%- endfor -%}
                 </select>
                 <select
                     id="albums"
@@ -220,8 +220,8 @@
                     style="height: calc(40vh - 4rem)"
                     multiple
                 >
-                    {% for (id, artist) in data.artists %} {% for (id, album) in
-                    artist.albums %}
+                    {% for (id, artist) in data.artists|items %} {% for (id,
+                    album) in artist.albums|items %}
                     <option
                         id="{{ album.id }}"
                         data-artist-id="{{ album.artist_id }}"
@@ -239,8 +239,9 @@
                     style="height: calc(60vh - 4rem)"
                     multiple
                 >
-                    {% for (id, artist) in data.artists %} {% for (id, album) in
-                    artist.albums %} {% for track in album.tracks %}
+                    {% for (id, artist) in data.artists|items %} {% for (id,
+                    album) in artist.albums|items %} {% for track in
+                    album.tracks %}
                     <option
                         id="{{ track.id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
