@@ -5,11 +5,19 @@
         <title>{{ title }}</title>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
+<<<<<<< HEAD
                 let queue = new Map();
                 let queueIds = [];
                 let queueIndex = 0;
                 let isPlaying = false;
                 const queueElement = document.getElementById("queue");
+||||||| parent of 8f5d49a (repeat status)
+                let queue = new Map();
+                let queueIds = [];
+                let queueIndex = 0;
+                let isPlaying = false;
+=======
+>>>>>>> 8f5d49a (repeat status)
                 const artists = document.getElementById("artists");
                 const albums = document.getElementById("albums");
                 const albumOptions = albums.querySelectorAll("option");
@@ -19,6 +27,17 @@
                 const playButton = document.getElementById("play");
                 const nextButton = document.getElementById("next");
                 const prevButton = document.getElementById("prev");
+                const repeatStates = {
+                    NO_REPEAT: 0,
+                    REPEAT_ONE: 1,
+                    REPEAT_ALL: 2,
+                };
+
+                let queue = new Map();
+                let queueIds = [];
+                let queueIndex = 0;
+                let repeatState = repeatStates.NO_REPEAT;
+                let isPlaying = false;
 
                 const updateQueueByDataset = ({ key, value }) => {
                     queue.clear();
@@ -120,19 +139,52 @@
                 };
 
                 const prev = () => {
-                    if (queueIndex > 0) {
-                        queueIndex -= 1;
+                    switch (repeatState) {
+                        case repeatStates.REPEAT_ONE:
+                            break;
+                        case repeatStates.REPEAT_ALL:
+                            if (queueIndex > 0) {
+                                queueIndex -= 1;
+                            } else {
+                                queueIndex = queueIds.length;
+                            }
+                            break;
+                        case repeatStates.NO_REPEAT:
+                            if (queueIndex > 0) {
+                                queueIndex -= 1;
+                            }
+                            break;
                     }
                     audio.src = queue.get(queueIds[queueIndex]).filePath;
-                    play();
+                    if (isPlaying) {
+                        play();
+                    }
                 };
                 const next = () => {
-                    if (queueIndex <= queueIds.length) {
-                        queueIndex += 1;
+                    switch (repeatState) {
+                        case repeatStates.REPEAT_ONE:
+                            break;
+                        case repeatStates.REPEAT_ALL:
+                            if (queueIndex <= queueIds.length) {
+                                queueIndex += 1;
+                            } else {
+                                queueIndex = 0;
+                            }
+                            break;
+                        case repeatStates.NO_REPEAT:
+                            if (queueIndex <= queueIds.length) {
+                                queueIndex += 1;
+                            }
+                            break;
                     }
+
                     audio.src = queue.get(queueIds[queueIndex]).filePath;
-                    play();
+
+                    if (isPlaying) {
+                        play();
+                    }
                 };
+
                 const play = () => {
                     isPlaying = true;
                     audio.play();
