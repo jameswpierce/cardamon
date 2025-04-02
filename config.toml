@@ -5,3 +5,7 @@ templates = "templates/"
 
 [theme]
 title = "cardamon's house"
+
+[server]
+port = 3003
+domain = "127.0.0.1"

@@ -43,7 +43,7 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
             ServeDir::new("output").not_found_service(ServeFile::new("output/index.html")),
         );
     // Start the server
-    let addr = "127.0.0.1:3001";
+    let addr = format!("{}:{}", &config.server.domain, &config.server.port);
     println!("Server running on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 

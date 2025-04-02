@@ -6,6 +6,13 @@ use toml;
 pub struct Config {
     pub directories: Directories,
     pub theme: Theme,
+    pub server: Server,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Server {
+    pub domain: String,
+    pub port: usize,
 }
 
 #[derive(Debug, Deserialize)]
