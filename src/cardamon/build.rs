@@ -163,23 +163,26 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let index = fs::read_to_string("templates/index.html")
+    let index_html = fs::read_to_string("templates/index.html")
         .expect("No template/index.html found in working directory.");
-    env.add_template_owned("index", index).unwrap();
+    env.add_template_owned("index_html", index_html).unwrap();
+    let index_js = fs::read_to_string("templates/index.js")
+        .expect("No template/index.js found in working directory.");
+    env.add_template_owned("index_js", index_js).unwrap();
 
-    let template = env.get_template("index").unwrap();
-    let index_html = template
+    let template = env.get_template("index_html").unwrap();
+    let js_template = env.get_template("index_js").unwrap();
+    let index_html_rendered = template
         .render(context! {
             title => config.theme.title,
             data => Data { artists },
         })
         .unwrap();
+    let index_js_rendered = js_template.render(context! {}).unwrap();
     let output_path = Path::new(&config.directories.output);
 
-    match fs::write(output_path.join("index.html"), index_html) {
-        Err(why) => panic!("{:?}", why),
-        Ok(_) => {}
-    };
+    fs::write(output_path.join("index.html"), index_html_rendered)?;
+    fs::write(output_path.join("index.js"), index_js_rendered)?;
 
     Ok(())
 }

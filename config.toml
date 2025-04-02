@@ -1,5 +1,5 @@
 [directories]
-music = "/Users/jamespierce/Development/@jameswpierce/cardamon/music/"
+music = "music/"
 output = "output/"
 templates = "templates/"
 
