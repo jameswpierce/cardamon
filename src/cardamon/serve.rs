@@ -1,39 +1,32 @@
 use crate::cardamon::build;
 use crate::cardamon::config::load_config;
 use axum::Router;
-use notify_debouncer_mini::notify::{RecursiveMode};
-use notify_debouncer_mini::{DebounceEventResult, DebouncedEventKind, new_debouncer};
+use notify_debouncer_full::notify::RecursiveMode;
+use notify_debouncer_full::notify::event::{CreateKind, EventKind, ModifyKind, RemoveKind};
+use notify_debouncer_full::{DebounceEventResult, new_debouncer};
 use std::path::Path;
 use std::time::Duration;
 use tower_http::services::{ServeDir, ServeFile};
-use notify_debouncer_mini::notify::{
-    event::{
-        CreateKind,
-        ModifyKind,
-        RemoveKind,
-        AccessKind,
-    }
-};
 
-fn is_relevant_event(event_kind: &DebouncedEventKind) -> bool {
+fn is_relevant_event(event_kind: &EventKind) -> bool {
     match event_kind {
-        DebouncedEventKind::Create(create_kind) => match create_kind {
-            CreateKind::File => true,      // New file created
-            CreateKind::Folder => true,    // New directory created
-            CreateKind::Any => true,       // Any creation
+        EventKind::Create(create_kind) => match create_kind {
+            CreateKind::File => true,   // New file created
+            CreateKind::Folder => true, // New directory created
+            CreateKind::Any => true,    // Any creation
             _ => false,
         },
-        DebouncedEventKind::Modify(modify_kind) => match modify_kind {
-            ModifyKind::Name(_) => true,   // Rename or move
-            ModifyKind::Data(_) => true,   // Content changes
+        EventKind::Modify(modify_kind) => match modify_kind {
+            ModifyKind::Name(_) => true,      // Rename or move
+            ModifyKind::Data(_) => true,      // Content changes
             ModifyKind::Metadata(_) => false, // Metadata changes (timestamps, permissions)
-            ModifyKind::Any => true,       // Any modification
+            ModifyKind::Any => true,          // Any modification
             _ => false,
         },
-        DebouncedEventKind::Remove(remove_kind) => match remove_kind {
-            RemoveKind::File => true,      // File removed
-            RemoveKind::Folder => true,    // Directory removed
-            RemoveKind::Any => true,       // Any removal
+        EventKind::Remove(remove_kind) => match remove_kind {
+            RemoveKind::File => true,   // File removed
+            RemoveKind::Folder => true, // Directory removed
+            RemoveKind::Any => true,    // Any removal
             _ => false,
         },
         _ => false,
@@ -44,35 +37,34 @@ fn is_relevant_event(event_kind: &DebouncedEventKind) -> bool {
 pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config()?;
     println!("starting server...");
+    let mut debouncer =
+        new_debouncer(
+            Duration::from_secs(1),
+            None,
+            |res: DebounceEventResult| match res {
+                Ok(events) => {
+                    let relevant_events: Vec<_> = events
+                        .into_iter()
+                        .filter(|event| is_relevant_event(&event.kind))
+                        .collect();
 
-    let mut debouncer = new_debouncer(
-        Duration::from_secs(1),
-        |res: DebounceEventResult| match res {
-            Ok(events) => {
-                let relevant_events: Vec<_> = events
-                    .into_iter()
-                    .filter(|event| {
-                        is_relevant_event(&event.kind)
-                    })
-                    .collect();
-
-                if !relevant_events.is_empty() {
-                    println!("Change detected, triggering rebuild...");
-                    let _ = build::build();
+                    if !relevant_events.is_empty() {
+                        println!("Change detected, triggering rebuild...");
+                        let _ = build::build();
+                    }
                 }
-            }
-            Err(e) => println!("Error {:?}", e),
-        },
-    )
-    .unwrap();
+                Err(e) => println!("Error {:?}", e),
+            },
+        )
+        .unwrap();
 
-    debouncer.watcher().watch(
+    debouncer.watch(
         Path::new(&config.directories.music),
         RecursiveMode::Recursive,
     )?;
 
     if dev_mode == true {
-        debouncer.watcher().watch(
+        debouncer.watch(
             Path::new(&config.directories.templates),
             RecursiveMode::Recursive,
         )?;
