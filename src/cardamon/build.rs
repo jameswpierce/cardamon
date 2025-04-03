@@ -64,7 +64,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                 Some("mp3") => match Tag::read_from_path(entry.path()) {
                     Err(_) => {}
                     Ok(tag) => {
-                        let artist_name = tag.artist().unwrap_or("Unknown Artist").to_string();
+                        let artist_name = tag.album_artist().unwrap_or(tag.artist().unwrap_or("Unknown Artist")).to_string();
                         let album_title = tag.album().unwrap_or("Unknown Album").to_string();
                         let artist_id =
                             Uuid::new_v5(&ARTIST_NAMESPACE, &artist_name.as_bytes()).to_string();
