@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const playButton = document.getElementById("play");
   const nextButton = document.getElementById("next");
   const prevButton = document.getElementById("prev");
+  const nowPlaying = document.getElementById("now-playing");
   const repeatButton = document.getElementById("repeat");
   const repeatStates = {
     NO_REPEAT: 0,
@@ -156,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const play = () => {
     isPlaying = true;
     playButton.innerText = "Pause";
+    nowPlaying.innerText = `${currentTrack.name} - ${currentTrack.artist} - ${currentTrack.album}`;
     audio.play();
   };
   const pause = () => {
@@ -164,6 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
     audio.pause();
   };
 
+  audio.addEventListener("timeupdate", () => {
+    nowPlaying.innerText = `${nowPlaying.innerText} ${audio.currentTime}`;
+  });
   repeatButton.addEventListener("click", () => {
     repeatState = (repeatState + 1) % Object.keys(repeatStates).length;
 

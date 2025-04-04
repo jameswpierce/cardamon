@@ -50,6 +50,12 @@
             .bg-blue {
                 background-color: blue;
             }
+            .text-white {
+                color: white;
+            }
+            .hidden {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -127,8 +133,8 @@
             </section>
         </main>
         <aside class="bg-blue w-full" style="height: 8rem">
-            <audio id="audio" controls></audio>
-            <span id="now-playing"></span>
+            <audio class="hidden" id="audio" controls></audio>
+            <div id="now-playing" class="text-white"></div>
             <button id="play">Play</button>
             <button id="prev">Prev</button>
             <button id="next">Next</button>
