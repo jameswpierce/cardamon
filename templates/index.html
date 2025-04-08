@@ -118,7 +118,7 @@
                         id="{{ track.id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                         data-number="{{ track.number }}"
-                        data-file-path="/music/{{ track.file_path }}"
+                        data-file-path="{{root_path}}/music{{ track.file_path }}"
                         data-artist-id="{{ track.artist_id }}"
                         data-album-id="{{ track.album_id }}"
                         data-artist="{{ artist.name }}"

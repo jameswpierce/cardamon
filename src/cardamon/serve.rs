@@ -70,14 +70,15 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
         )?;
     }
 
-    let root_path = format!("{}/", &config.server.root_path);
+    let root_path = format!("{}", &config.server.root_path);
+    let music_path = format!("{}/music", &config.server.root_path);
 
     let app = Router::new()
-        .route_service(&root_path, ServeDir::new(&config.directories.output).not_found_service(ServeFile::new("output/index.html")))
-        .route_service("/music", ServeDir::new(&config.directories.music));
+        .nest_service(&root_path, ServeDir::new(&config.directories.output))
+        .nest_service(&music_path, ServeDir::new(&config.directories.music));
     // Start the server
     let addr = format!("{}:{}", &config.server.domain, &config.server.port);
-    println!("Server running on http://{}", addr);
+    println!("Server running on http://{}{}", addr, root_path);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
