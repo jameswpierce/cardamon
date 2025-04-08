@@ -9,3 +9,4 @@ title = "cardamon's house"
 [server]
 port = 3000
 domain = "127.0.0.1"
+root_path = "/~cardamon"

@@ -13,6 +13,7 @@ pub struct Config {
 pub struct Server {
     pub domain: String,
     pub port: usize,
+    pub root_path: String,
 }
 
 #[derive(Debug, Deserialize)]

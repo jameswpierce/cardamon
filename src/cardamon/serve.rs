@@ -70,12 +70,11 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
         )?;
     }
 
+    let root_path = format!("{}/", &config.server.root_path);
+
     let app = Router::new()
-        .route_service("/", ServeFile::new("output/index.html"))
-        .route_service("/music", ServeDir::new(&config.directories.music))
-        .fallback_service(
-            ServeDir::new("output").not_found_service(ServeFile::new("output/index.html")),
-        );
+        .route_service(&root_path, ServeDir::new(&config.directories.output).not_found_service(ServeFile::new("output/index.html")))
+        .route_service("/music", ServeDir::new(&config.directories.music));
     // Start the server
     let addr = format!("{}:{}", &config.server.domain, &config.server.port);
     println!("Server running on http://{}", addr);
