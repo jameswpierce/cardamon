@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextButton = document.getElementById("next");
   const prevButton = document.getElementById("prev");
   const nowPlaying = document.getElementById("now-playing");
+  const time = document.getElementById("time");
   const repeatButton = document.getElementById("repeat");
   const repeatStates = {
     NO_REPEAT: 0,
@@ -158,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isPlaying = true;
     playButton.innerText = "Pause";
     nowPlaying.innerText = `${currentTrack.name} - ${currentTrack.artist} - ${currentTrack.album}`;
+    console.log(audio);
     audio.play();
   };
   const pause = () => {
@@ -166,8 +168,27 @@ document.addEventListener("DOMContentLoaded", () => {
     audio.pause();
   };
 
+  const formatTime = (timeInSeconds) => {
+    const hours = String(
+      parseInt(Math.floor(timeInSeconds / (60 * 60))),
+    ).padStart(2, "0");
+    const minutes = String(parseInt(Math.floor(timeInSeconds / 60))).padStart(
+      2,
+      "0",
+    );
+    const seconds = String(parseInt(Math.floor(timeInSeconds % 60))).padStart(
+      2,
+      "0",
+    );
+
+    if (hours != "00") {
+      return `${hours}:${minutes}:${seconds}`;
+    }
+    return `${minutes}:${seconds}`;
+  };
+
   audio.addEventListener("timeupdate", () => {
-    nowPlaying.innerText = `${nowPlaying.innerText} ${audio.currentTime}`;
+    time.innerText = `${formatTime(audio.currentTime)} ${formatTime(audio.duration)}`;
   });
   repeatButton.addEventListener("click", () => {
     repeatState = (repeatState + 1) % Object.keys(repeatStates).length;
