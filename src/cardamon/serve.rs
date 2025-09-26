@@ -6,7 +6,7 @@ use notify_debouncer_full::notify::event::{CreateKind, EventKind, ModifyKind, Re
 use notify_debouncer_full::{DebounceEventResult, new_debouncer};
 use std::path::Path;
 use std::time::Duration;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::services::ServeDir;
 
 fn is_relevant_event(event_kind: &EventKind) -> bool {
     match event_kind {

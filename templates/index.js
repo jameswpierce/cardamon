@@ -2,9 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const queueElement = document.getElementById("queue");
   const artists = document.getElementById("artists");
   const albums = document.getElementById("albums");
-  const albumOptions = albums.querySelectorAll("option");
+  const albumOptions = albums.querySelectorAll("li");
   const tracks = document.getElementById("tracks");
-  const trackOptions = tracks.querySelectorAll("option");
+  const trackOptions = tracks.querySelectorAll("li");
   const audio = document.getElementById("audio");
   const playButton = document.getElementById("play");
   const nextButton = document.getElementById("next");
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     queue.clear();
     queueIds = [];
     queueIndex = 0;
-    for (trackOption of trackOptions) {
+    for (let trackOption of trackOptions) {
       const { id } = trackOption;
       const { number, filePath, artistId, albumId, artist, album, name } =
         trackOption.dataset;

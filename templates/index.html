@@ -16,16 +16,17 @@
             html {
                 font-size: 16px;
             }
-            select {
+            ul {
                 background-color: lime;
                 scrollbar-width: none; /*For Firefox*/
                 -ms-overflow-style: none; /*For Internet Explorer 10+*/
+                overflow-y: scroll;
             }
-            select::-webkit-scrollbar {
+            ul::-webkit-scrollbar {
                 /*For WebKit Browsers*/
                 width: 0;
             }
-            option, button {
+            li, button {
                 cursor: pointer;
             }
             {%- for i in range(1, 36) -%}
@@ -66,28 +67,28 @@
                 class="flex"
                 style="max-height: calc(40vh - 4rem); height: calc(40vh - 4rem)"
             >
-                <select
+                <ul
                     id="queue"
                     class="w-full"
                     style="height: calc(40vh - 4rem)"
                     multiple
-                ></select>
-                <select
+                ></ul>
+                <ul
                     id="artists"
                     class="w-full"
                     style="height: calc(40vh - 4rem)"
                     multiple
                 >
                     {%- for (id, artist) in data.artists|items -%}
-                    <option
+                    <li
                         id="{{ artist.id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                     >
                         {{ artist.name }}
-                    </option>
+                    </li>
                     {%- endfor -%}
-                </select>
-                <select
+                </ul>
+                <ul
                     id="albums"
                     class="w-full"
                     style="height: calc(40vh - 4rem)"
@@ -95,18 +96,18 @@
                 >
                     {% for (id, artist) in data.artists|items %} {% for (id,
                     album) in artist.albums|items %}
-                    <option
+                    <li
                         id="{{ album.id }}"
                         data-artist-id="{{ album.artist_id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                     >
                         {{ album.title }}
-                    </option>
+                    </li>
                     {% endfor %} {% endfor %}
-                </select>
+                </ul>
             </section>
             <section id="bottom" style="max-height: calc(60vh - 4rem)">
-                <select
+                <ul
                     id="tracks"
                     class="w-full"
                     style="height: calc(60vh - 4rem)"
@@ -115,7 +116,7 @@
                     {% for (id, artist) in data.artists|items %} {% for (id,
                     album) in artist.albums|items %} {% for track in
                     album.tracks %}
-                    <option
+                    <li
                         id="{{ track.id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                         data-number="{{ track.number }}"
@@ -128,9 +129,9 @@
                     >
                         {{ track.number }} {{ artist.name }} - {{ album.title }}
                         - {{ track.name }}
-                    </option>
+                    </li>
                     {% endfor %} {% endfor %} {% endfor %}
-                </select>
+                </ul>
             </section>
         </main>
         <aside class="bg-blue w-full" style="height: 8rem">
