@@ -14,12 +14,16 @@ const ui = {
       previous: document.getElementById("prev"),
       repeat: document.getElementById("repeat"),
       shuffle: document.getElementById("shuffle"),
+      audio: document.getElementById("audio"),
     };
 
-    const player = Player.init();
+    const player = Player.init({ audioElement: elements.audio });
+
+    elements.audio.src =
+      elements.tracks.getElementsByTagName("li")[0].dataset.filePath;
 
     elements.play.addEventListener("click", () =>
-      player.isPlaying ? player.pause() : player.play(),
+      player.isPlaying() ? player.pause() : player.play(),
     );
 
     elements.next.addEventListener("click", () => {
@@ -55,6 +59,8 @@ const ui = {
 
 const Player = {
   init: ({
+    audioElement = document.getElementById("audio"),
+    queue = new Map(),
     play = () => {
       console.log("play");
     },
@@ -89,23 +95,23 @@ const Player = {
       NONE: "none",
     };
     return {
-      isPlaying: false,
+      isPlaying: () => !audioElement.paused,
       isShuffled: false,
       currentTrack: null,
       artists: new Map(),
       albums: new Map(),
       tracks: new Map(),
-      queue: new Map(),
+      queue,
       repeatState: repeatStates.NONE,
       repeatStates: function () {
         return repeatStates;
       },
       play: function () {
-        this.isPlaying = true;
+        audioElement.play();
         play();
       },
       pause: function () {
-        this.isPlaying = false;
+        audioElement.pause();
         pause();
       },
       next: function () {
