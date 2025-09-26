@@ -63,14 +63,14 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
         RecursiveMode::Recursive,
     )?;
 
-    if dev_mode == true {
+    if dev_mode {
         debouncer.watch(
             Path::new(&config.directories.templates),
             RecursiveMode::Recursive,
         )?;
     }
 
-    let root_path = format!("{}", &config.server.root_path);
+    let root_path = (&config.server.root_path).to_string();
     let music_path = format!("{}/music", &config.server.root_path);
 
     let app = Router::new()

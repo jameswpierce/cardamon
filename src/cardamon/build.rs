@@ -70,15 +70,15 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                             .to_string();
                         let album_title = tag.album().unwrap_or("Unknown Album").to_string();
                         let artist_id =
-                            Uuid::new_v5(&ARTIST_NAMESPACE, &artist_name.as_bytes()).to_string();
+                            Uuid::new_v5(&ARTIST_NAMESPACE, artist_name.as_bytes()).to_string();
                         let album_id =
-                            Uuid::new_v5(&ALBUM_NAMESPACE, &album_title.as_bytes()).to_string();
+                            Uuid::new_v5(&ALBUM_NAMESPACE, album_title.as_bytes()).to_string();
                         match artists.get_mut(&artist_name) {
                             Some(artist) => match artist.albums.get_mut(&album_title) {
                                 Some(album) => {
                                     let id = Uuid::new_v5(
                                         &TRACK_NAMESPACE,
-                                        &entry.file_name().as_encoded_bytes(),
+                                        entry.file_name().as_encoded_bytes(),
                                     )
                                     .to_string();
                                     let track = Track {
@@ -105,7 +105,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                     };
                                     let id = Uuid::new_v5(
                                         &TRACK_NAMESPACE,
-                                        &entry.file_name().as_encoded_bytes(),
+                                        entry.file_name().as_encoded_bytes(),
                                     )
                                     .to_string();
                                     let track = Track {
@@ -138,7 +138,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
                                 };
                                 let id = Uuid::new_v5(
                                     &TRACK_NAMESPACE,
-                                    &entry.file_name().as_encoded_bytes(),
+                                    entry.file_name().as_encoded_bytes(),
                                 )
                                 .to_string();
                                 let track = Track {
