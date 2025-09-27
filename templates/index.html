@@ -29,11 +29,17 @@
             li, button {
                 cursor: pointer;
             }
-            {%- for i in range(1, 36) -%}
+            li button {
+                width: 100%;
+                background-color: transparent;
+                text-align: left;
+                color: #111;
+            }
+            {%- for i in range(0, 35) -%}
             .bg-color-{{ i }} {
                 background-color: hsl({{ (i - 1) * 10}}, 100%, 80%);
             }
-            .bg-color-{{ i }}:active {
+            .bg-color-{{ i }}:has(button:active, button:focus) {
                 background-color: hsl({{ (((i - 1) * 10) + 180) % 360 }}, 100%, 80%);
             }
             .bg-color-{{ i }}:hover {
@@ -82,9 +88,9 @@
                     {%- for (id, artist) in data.artists|items -%}
                     <li
                         id="{{ artist.id }}"
-                        class="bg-color-{{ (loop.index % 36) + 1 }}"
+                        class="bg-color-{{ (loop.index0 % 36) }}"
                     >
-                        {{ artist.name }}
+                        <button>{{ artist.name }}</button>
                     </li>
                     {%- endfor -%}
                 </ul>
@@ -101,7 +107,7 @@
                         data-artist-id="{{ album.artist_id }}"
                         class="bg-color-{{ (loop.index % 36) + 1 }}"
                     >
-                        {{ album.title }}
+                        <button>{{ album.title }}</button>
                     </li>
                     {% endfor %} {% endfor %}
                 </ul>
@@ -127,8 +133,10 @@
                         data-album="{{ album.title }}"
                         data-name="{{ track.name }}"
                     >
-                        {{ track.number }} {{ artist.name }} - {{ album.title }}
-                        - {{ track.name }}
+                        <button>
+                            {{ track.number }} {{ artist.name }} - {{
+                            album.title }} - {{ track.name }}
+                        </button>
                     </li>
                     {% endfor %} {% endfor %} {% endfor %}
                 </ul>

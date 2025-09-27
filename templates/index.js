@@ -5,9 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
 const ui = {
   init: () => {
     const elements = {
-      artists: document.getElementById("artists"),
-      albums: document.getElementById("albums"),
-      tracks: document.getElementById("tracks"),
+      artists: document.getElementById("artists").getElementsByTagName("li"),
+      albums: document.getElementById("albums").getElementsByTagName("li"),
+      tracks: document.getElementById("tracks").getElementsByTagName("li"),
       queue: document.getElementById("queue"),
       play: document.getElementById("play"),
       next: document.getElementById("next"),
@@ -15,16 +15,22 @@ const ui = {
       repeat: document.getElementById("repeat"),
       shuffle: document.getElementById("shuffle"),
       audio: document.getElementById("audio"),
+      nowPlaying: document.getElementById("now-playing"),
     };
 
     const player = Player.init({ audioElement: elements.audio });
 
-    elements.audio.src =
-      elements.tracks.getElementsByTagName("li")[0].dataset.filePath;
+    const firstTrack = elements.tracks[0];
+    elements.audio.src = firstTrack.dataset.filePath;
+    elements.nowPlaying.innerText = `${firstTrack.dataset.name} - ${firstTrack.dataset.artist} - ${firstTrack.dataset.album}`;
 
-    elements.play.addEventListener("click", () =>
-      player.isPlaying() ? player.pause() : player.play(),
-    );
+    elements.play.addEventListener("click", async () => {
+      // TODO: isPlaying should be async? use promise???
+      player.isPlaying() ? await player.pause() : await player.play();
+      player.isPlaying()
+        ? (elements.play.innerText = "Pause")
+        : (elements.play.innerText = "Play");
+    });
 
     elements.next.addEventListener("click", () => {
       player.next();
@@ -54,6 +60,25 @@ const ui = {
     elements.shuffle.addEventListener("click", () => {
       player.isShuffled ? player.unshuffle() : player.shuffle();
     });
+
+    for (const artist of elements.artists) {
+      artist.querySelector("button").addEventListener("dblclick", (event) => {
+        const artist = event.target.parentElement.dataset;
+        console.log(artist);
+      });
+    }
+    for (const album of elements.albums) {
+      album.querySelector("button").addEventListener("dblclick", (event) => {
+        const album = event.target.parentElement.dataset;
+        console.log(album);
+      });
+    }
+    for (const el of elements.tracks) {
+      el.querySelector("button").addEventListener("dblclick", (event) => {
+        const track = event.target.parentElement.dataset;
+        console.log(track);
+      });
+    }
   },
 };
 
@@ -106,12 +131,12 @@ const Player = {
       repeatStates: function () {
         return repeatStates;
       },
-      play: function () {
-        audioElement.play();
+      play: async function () {
+        await audioElement.play();
         play();
       },
-      pause: function () {
-        audioElement.pause();
+      pause: async function () {
+        await audioElement.pause();
         pause();
       },
       next: function () {
