@@ -145,18 +145,13 @@ const Player = {
       NONE: "none",
     };
 
-    audioElement.addEventListener("ended", async () => {
-      this.currentTrackIndex += 1;
-      const track = queue[this.currentTrackIndex];
-      await this.setCurrentTrack(track);
-    });
-
-    return {
+    const player = {
       isPlaying: () => !audioElement.paused,
       isShuffled: false,
       currentTrack: null,
       currentTrackIndex: 0,
       queue,
+      unshuffledQueue: queue,
       repeatState: repeatStates.NONE,
       repeatStates: function () {
         return repeatStates;
@@ -170,14 +165,35 @@ const Player = {
         onPause(this.currentTrack);
       },
       next: async function () {
-        this.currentTrackIndex += 1;
+        switch (this.repeatState) {
+          case this.repeatStates().NONE:
+            if (this.currentTrackIndex >= this.queue.length - 1) {
+              return null;
+            }
+            this.currentTrackIndex += 1;
+            break;
+          case this.repeatStates().ONE:
+            await this.seekToBeginning();
+            return null;
+          case this.repeatStates().ALL:
+            if (this.currentTrackIndex >= this.queue.length - 1) {
+              this.currentTrackIndex = 0;
+            } else {
+              this.currentTrackIndex += 1;
+            }
+            break;
+        }
         const track = queue[this.currentTrackIndex];
         await this.setCurrentTrack(track);
       },
       previous: async function () {
-        this.currentTrackIndex -= 1;
-        const track = queue[this.currentTrackIndex];
-        await this.setCurrentTrack(track);
+        this.currentTrackIndex > 0 ? (this.currentTrackIndex -= 1) : null;
+        if (audioElement.currentTime > 0.3) {
+          await this.seekToBeginning();
+        } else {
+          const track = queue[this.currentTrackIndex];
+          await this.setCurrentTrack(track);
+        }
       },
       repeat: function (kind) {
         switch (kind) {
@@ -192,26 +208,37 @@ const Player = {
         }
       },
       shuffle: function () {
-        this.isShuffled = true;
+        this.queue = this.queue
+          .map((value) => ({ value, sort: Math.random() }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(({ value }) => value);
         shuffle();
       },
       unshuffle: function () {
-        this.isShuffled = false;
+        this.queue = this.unshuffledQueue;
         unshuffle();
+      },
+      seekToBeginning: async function () {
+        if (this.isPlaying()) {
+          audioElement.load();
+          audioElement.onloadeddata = async () => {
+            await audioElement.play();
+          };
+          audioElement.onloadedata = null;
+        } else {
+          audioElement.load();
+        }
       },
       setCurrentTrack: async function (track) {
         if (this.isPlaying()) {
-          console.log("continue");
           audioElement.src = track.filePath;
           audioElement.onloadeddata = async () => {
             await audioElement.play();
           };
           audioElement.onloadedata = null;
         } else {
-          console.log("dont continue");
           audioElement.src = track.filePath;
         }
-
         onTrackChange(track);
       },
       setQueue: function (queue) {
@@ -219,6 +246,10 @@ const Player = {
         this.queue = queue;
       },
     };
+
+    audioElement.addEventListener("ended", async () => {
+      await player.next();
+    });
   },
 };
 
