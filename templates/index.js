@@ -18,26 +18,48 @@ const ui = {
       nowPlaying: document.getElementById("now-playing"),
     };
 
-    const player = Player.init({ audioElement: elements.audio });
+    const handleTrackChange = (track) => {
+      elements.audio.src = track.filePath;
+      elements.nowPlaying.innerText = `${track.name} - ${track.artist} - ${track.album}`;
+      console.log(track);
+    };
 
-    const firstTrack = elements.tracks[0];
-    elements.audio.src = firstTrack.dataset.filePath;
-    elements.nowPlaying.innerText = `${firstTrack.dataset.name} - ${firstTrack.dataset.artist} - ${firstTrack.dataset.album}`;
+    const handlePlay = (track) => {
+      elements.play.innerText = "Pause";
+    };
+
+    const handlePause = (track) => {
+      elements.play.innerText = "Play";
+    };
+
+    const player = Player.init({
+      audioElement: elements.audio,
+      queue: Array.from(elements.tracks).map((track) => {
+        return {
+          id: track.id,
+          ...track.dataset,
+        };
+      }),
+      onTrackChange: handleTrackChange,
+      onPlay: handlePlay,
+      onPause: handlePause,
+    });
+
+    console.log(player.queue);
+
+    const firstTrack = elements.tracks[0].dataset;
+    handleTrackChange(firstTrack);
 
     elements.play.addEventListener("click", async () => {
-      // TODO: isPlaying should be async? use promise???
       player.isPlaying() ? await player.pause() : await player.play();
-      player.isPlaying()
-        ? (elements.play.innerText = "Pause")
-        : (elements.play.innerText = "Play");
     });
 
-    elements.next.addEventListener("click", () => {
-      player.next();
+    elements.next.addEventListener("click", async () => {
+      await player.next();
     });
 
-    elements.previous.addEventListener("click", () => {
-      player.previous();
+    elements.previous.addEventListener("click", async () => {
+      await player.previous();
     });
 
     elements.repeat.addEventListener("click", () => {
@@ -63,19 +85,31 @@ const ui = {
 
     for (const artist of elements.artists) {
       artist.querySelector("button").addEventListener("dblclick", (event) => {
-        const artist = event.target.parentElement.dataset;
+        const artist = {
+          id: event.target.parentElement.id,
+          ...event.target.parentElement.dataset,
+        };
         console.log(artist);
       });
     }
     for (const album of elements.albums) {
       album.querySelector("button").addEventListener("dblclick", (event) => {
-        const album = event.target.parentElement.dataset;
+        const album = {
+          id: event.target.parentElement.id,
+          ...event.target.parentElement.dataset,
+        };
         console.log(album);
       });
     }
     for (const el of elements.tracks) {
-      el.querySelector("button").addEventListener("dblclick", (event) => {
-        const track = event.target.parentElement.dataset;
+      el.querySelector("button").addEventListener("dblclick", async (event) => {
+        const track = {
+          id: event.target.parentElement.id,
+          ...event.target.parentElement.dataset,
+        };
+        await player.setCurrentTrack(track);
+        await player.play();
+
         console.log(track);
       });
     }
@@ -85,19 +119,7 @@ const ui = {
 const Player = {
   init: ({
     audioElement = document.getElementById("audio"),
-    queue = new Map(),
-    play = () => {
-      console.log("play");
-    },
-    pause = () => {
-      console.log("pause");
-    },
-    next = () => {
-      console.log("next");
-    },
-    previous = () => {
-      console.log("previous");
-    },
+    queue = new Array(),
     repeatOne = () => {
       console.log("repeatOne");
     },
@@ -113,19 +135,27 @@ const Player = {
     unshuffle = () => {
       console.log("unshuffle");
     },
+    onTrackChange = (track) => {},
+    onPlay = (track) => {},
+    onPause = (track) => {},
   } = {}) => {
     const repeatStates = {
       ONE: "one",
       ALL: "all",
       NONE: "none",
     };
+
+    audioElement.addEventListener("ended", async () => {
+      this.currentTrackIndex += 1;
+      const track = queue[this.currentTrackIndex];
+      await this.setCurrentTrack(track);
+    });
+
     return {
       isPlaying: () => !audioElement.paused,
       isShuffled: false,
       currentTrack: null,
-      artists: new Map(),
-      albums: new Map(),
-      tracks: new Map(),
+      currentTrackIndex: 0,
       queue,
       repeatState: repeatStates.NONE,
       repeatStates: function () {
@@ -133,17 +163,21 @@ const Player = {
       },
       play: async function () {
         await audioElement.play();
-        play();
+        onPlay(this.currentTrack);
       },
       pause: async function () {
         await audioElement.pause();
-        pause();
+        onPause(this.currentTrack);
       },
-      next: function () {
-        next();
+      next: async function () {
+        this.currentTrackIndex += 1;
+        const track = queue[this.currentTrackIndex];
+        await this.setCurrentTrack(track);
       },
-      previous: function () {
-        previous();
+      previous: async function () {
+        this.currentTrackIndex -= 1;
+        const track = queue[this.currentTrackIndex];
+        await this.setCurrentTrack(track);
       },
       repeat: function (kind) {
         switch (kind) {
@@ -164,6 +198,25 @@ const Player = {
       unshuffle: function () {
         this.isShuffled = false;
         unshuffle();
+      },
+      setCurrentTrack: async function (track) {
+        if (this.isPlaying()) {
+          console.log("continue");
+          audioElement.src = track.filePath;
+          audioElement.onloadeddata = async () => {
+            await audioElement.play();
+          };
+          audioElement.onloadedata = null;
+        } else {
+          console.log("dont continue");
+          audioElement.src = track.filePath;
+        }
+
+        onTrackChange(track);
+      },
+      setQueue: function (queue) {
+        this.queue.clear();
+        this.queue = queue;
       },
     };
   },
