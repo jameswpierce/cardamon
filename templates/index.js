@@ -84,22 +84,49 @@ const ui = {
     });
 
     for (const artist of elements.artists) {
-      artist.querySelector("button").addEventListener("dblclick", (event) => {
-        const artist = {
-          id: event.target.parentElement.id,
-          ...event.target.parentElement.dataset,
-        };
-        console.log(artist);
-      });
+      artist
+        .querySelector("button")
+        .addEventListener("dblclick", async (event) => {
+          const artist = {
+            id: event.target.parentElement.id,
+            ...event.target.parentElement.dataset,
+          };
+          const queue = Array.from(elements.tracks)
+            .filter((track) => track.dataset.artistId == artist.id)
+            .map((track) => {
+              return {
+                id: track.id,
+                ...track.dataset,
+              };
+            });
+          console.log(queue);
+          player.setQueue(queue);
+          player.setCurrentTrack(queue[0]);
+          await player.play();
+          console.log(artist);
+        });
     }
     for (const album of elements.albums) {
-      album.querySelector("button").addEventListener("dblclick", (event) => {
-        const album = {
-          id: event.target.parentElement.id,
-          ...event.target.parentElement.dataset,
-        };
-        console.log(album);
-      });
+      album
+        .querySelector("button")
+        .addEventListener("dblclick", async (event) => {
+          const album = {
+            id: event.target.parentElement.id,
+            ...event.target.parentElement.dataset,
+          };
+          const queue = Array.from(elements.tracks)
+            .filter((track) => track.dataset.albumId == album.id)
+            .map((track) => {
+              return {
+                id: track.id,
+                ...track.dataset,
+              };
+            });
+          player.setQueue(queue);
+          player.setCurrentTrack(queue[0]);
+          await player.play();
+          console.log(album);
+        });
     }
     for (const el of elements.tracks) {
       el.querySelector("button").addEventListener("dblclick", async (event) => {
@@ -209,6 +236,7 @@ const Player = {
         }
       },
       shuffle: function () {
+        this.isShuffled = true;
         this.setQueue(
           this.queue
             .map((value) => ({ value, sort: Math.random() }))
@@ -219,6 +247,7 @@ const Player = {
         shuffle();
       },
       unshuffle: function () {
+        this.isShuffled = false;
         this.setQueue(this.unshuffledQueue);
         unshuffle();
       },
@@ -246,6 +275,7 @@ const Player = {
         onTrackChange(track);
       },
       setQueue: function (queue) {
+        this.currentTrackIndex = 0;
         this.queue = queue;
       },
     };
