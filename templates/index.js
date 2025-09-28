@@ -150,7 +150,7 @@ const Player = {
       isShuffled: false,
       currentTrack: null,
       currentTrackIndex: 0,
-      queue,
+      queue: queue,
       unshuffledQueue: queue,
       repeatState: repeatStates.NONE,
       repeatStates: function () {
@@ -183,7 +183,7 @@ const Player = {
             }
             break;
         }
-        const track = queue[this.currentTrackIndex];
+        const track = this.queue[this.currentTrackIndex];
         await this.setCurrentTrack(track);
       },
       previous: async function () {
@@ -191,7 +191,7 @@ const Player = {
         if (audioElement.currentTime > 0.3) {
           await this.seekToBeginning();
         } else {
-          const track = queue[this.currentTrackIndex];
+          const track = this.queue[this.currentTrackIndex];
           await this.setCurrentTrack(track);
         }
       },
@@ -205,17 +205,21 @@ const Player = {
             break;
           case repeatStates.NONE:
             repeatNone();
+            break;
         }
       },
       shuffle: function () {
-        this.queue = this.queue
-          .map((value) => ({ value, sort: Math.random() }))
-          .sort((a, b) => a.sort - b.sort)
-          .map(({ value }) => value);
+        this.setQueue(
+          this.queue
+            .map((value) => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value),
+        );
+        console.log(this.queue);
         shuffle();
       },
       unshuffle: function () {
-        this.queue = this.unshuffledQueue;
+        this.setQueue(this.unshuffledQueue);
         unshuffle();
       },
       seekToBeginning: async function () {
@@ -242,7 +246,6 @@ const Player = {
         onTrackChange(track);
       },
       setQueue: function (queue) {
-        this.queue.clear();
         this.queue = queue;
       },
     };
@@ -250,6 +253,8 @@ const Player = {
     audioElement.addEventListener("ended", async () => {
       await player.next();
     });
+
+    return player;
   },
 };
 
