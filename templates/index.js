@@ -45,8 +45,6 @@ const ui = {
       onPause: handlePause,
     });
 
-    console.log(player.queue);
-
     const firstTrack = elements.tracks[0].dataset;
     handleTrackChange(firstTrack);
 
@@ -86,6 +84,42 @@ const ui = {
     for (const artist of elements.artists) {
       artist
         .querySelector("button")
+        .addEventListener("click", async (event) => {
+          const artist = {
+            id: event.target.parentElement.id,
+            ...event.target.parentElement.dataset,
+          };
+          for (const album of elements.albums) {
+            if (
+              !album.classList.contains("hidden") &&
+              album.dataset.artistId != artist.id
+            ) {
+              album.classList.add("hidden");
+            }
+            if (
+              album.classList.contains("hidden") &&
+              album.dataset.artistId == artist.id
+            ) {
+              album.classList.remove("hidden");
+            }
+          }
+          for (const track of elements.tracks) {
+            if (
+              !track.classList.contains("hidden") &&
+              track.dataset.artistId != artist.id
+            ) {
+              track.classList.add("hidden");
+            }
+            if (
+              track.classList.contains("hidden") &&
+              track.dataset.artistId == artist.id
+            ) {
+              track.classList.remove("hidden");
+            }
+          }
+        });
+      artist
+        .querySelector("button")
         .addEventListener("dblclick", async (event) => {
           const artist = {
             id: event.target.parentElement.id,
@@ -99,14 +133,32 @@ const ui = {
                 ...track.dataset,
               };
             });
-          console.log(queue);
           player.setQueue(queue);
           player.setCurrentTrack(queue[0]);
           await player.play();
-          console.log(artist);
         });
     }
     for (const album of elements.albums) {
+      album.querySelector("button").addEventListener("click", async (event) => {
+        const album = {
+          id: event.target.parentElement.id,
+          ...event.target.parentElement.dataset,
+        };
+        for (const track of elements.tracks) {
+          if (
+            !track.classList.contains("hidden") &&
+            track.dataset.albumId != album.id
+          ) {
+            track.classList.add("hidden");
+          }
+          if (
+            track.classList.contains("hidden") &&
+            track.dataset.albumId == album.id
+          ) {
+            track.classList.remove("hidden");
+          }
+        }
+      });
       album
         .querySelector("button")
         .addEventListener("dblclick", async (event) => {
@@ -125,7 +177,6 @@ const ui = {
           player.setQueue(queue);
           player.setCurrentTrack(queue[0]);
           await player.play();
-          console.log(album);
         });
     }
     for (const el of elements.tracks) {
@@ -136,8 +187,6 @@ const ui = {
         };
         await player.setCurrentTrack(track);
         await player.play();
-
-        console.log(track);
       });
     }
   },
