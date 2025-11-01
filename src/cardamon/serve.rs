@@ -6,7 +6,7 @@ use notify_debouncer_full::notify::event::{CreateKind, EventKind, ModifyKind, Re
 use notify_debouncer_full::{DebounceEventResult, new_debouncer};
 use std::path::Path;
 use std::time::Duration;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 
 fn is_relevant_event(event_kind: &EventKind) -> bool {
     match event_kind {
@@ -74,6 +74,7 @@ pub async fn serve(dev_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
     let music_path = format!("{}/music", &config.server.root_path);
 
     let app = Router::new()
+        .route_service("/", ServeFile::new("output/index.html"))
         .nest_service(&root_path, ServeDir::new(&config.directories.output))
         .nest_service(&music_path, ServeDir::new(&config.directories.music));
     // Start the server
