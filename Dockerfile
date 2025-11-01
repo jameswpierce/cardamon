@@ -11,7 +11,7 @@ RUN cargo build --release
 FROM alpine:latest
 WORKDIR /app
 
-COPY config.toml .
+# COPY config.toml .
 COPY templates ./templates
 RUN mkdir output
 RUN mkdir music
